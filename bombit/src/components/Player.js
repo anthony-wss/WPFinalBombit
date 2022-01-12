@@ -1,6 +1,5 @@
 import * as PIXI from "pixi.js";
-import Bomb from "./Bomb";
-import sendData from "./Client";
+import Bomb from "./Bomb.js";
 
 class Player {
   constructor(texture) {
@@ -21,22 +20,18 @@ class Player {
   keyDown_handler = (key) => {
     switch(key) {
       case "ArrowUp":
-        sendData({player_id:1,key:"Dw"});
         this.is_moving[0] = 1;
         this.is_moving[4] = 1;
         break;
       case "ArrowDown":
-        sendData({player_id:1,key:"Ds"});
         this.is_moving[1] = 1;
         this.is_moving[4] = 1;
         break;
       case "ArrowLeft":
-        sendData({player_id:1,key:"Da"});
         this.is_moving[2] = 1;
         this.is_moving[4] = 0;
         break;
       case "ArrowRight":
-        sendData({player_id:1,key:"Dd"});
         this.is_moving[3] = 1;
         this.is_moving[4] = 0;
         break;
@@ -48,19 +43,15 @@ class Player {
   keyUp_handler = (key) => {
     switch(key) {
       case "ArrowUp":
-        sendData({player_id:1,key:"Uw"});
         this.is_moving[0] = 0;
         break;
       case "ArrowDown":
-        sendData({player_id:1,key:"Us"});
         this.is_moving[1] = 0;
         break;
       case "ArrowLeft":
-        sendData({player_id:1,key:"Da"});
         this.is_moving[2] = 0;
         break;
       case "ArrowRight":
-        sendData({player_id:1,key:"Dd"});
         this.is_moving[3] = 0;
         break;
       default:

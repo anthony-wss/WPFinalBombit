@@ -1,11 +1,11 @@
 import * as PIXI from "pixi.js";
 import React from 'react';
-import Player from "./Player";
+import Player from "../components/Player";
 import bunny_img from '../img/bunny.png';
 import box_img from '../img/box.png'
 import bomb_img from '../img/bomb.png'
 import fire_img from '../img/fire.jpg'
-import Bomb from "./Bomb";
+import Bomb from "../components/Bomb";
 import sendData from "./Client";
 // sendData({player_id:1,key:" "}) 
 // player_id : int(由伺服器連線時分配) key : String (WASD => 上左下右,P=>空白鍵放炸彈)
@@ -276,7 +276,11 @@ class Game extends React.Component {
       }
     }
   }
-  
+  /* 導到GameOver的畫面*/
+  SetUpBeforeGameOver = ()=>{
+    this.props.setGameStart(false);
+    this.props.setPage(1);
+  }
   render() {
     return (
       <>
@@ -287,6 +291,7 @@ class Game extends React.Component {
 
         <div id="type"></div>
         <div id="rendere"></div>
+        <div>交給王秀軒了<button onClick = {this.SetUpBeforeGameOver}>jump to GameOver.js</button></div>
       </>
     )
   }
