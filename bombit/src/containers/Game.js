@@ -6,7 +6,10 @@ import box_img from '../img/box.png'
 import bomb_img from '../img/bomb.png'
 import fire_img from '../img/fire.jpg'
 import Bomb from "./Bomb";
-
+import sendData from "./Client";
+// sendData({player_id:1,key:" "}) 
+// player_id : int(由伺服器連線時分配) key : String (WASD => 上左下右,P=>空白鍵放炸彈)
+//
 /*
 reference: https://medium.com/@peeyush.pathak18/pixijs-with-react-3cd40738180
 */
