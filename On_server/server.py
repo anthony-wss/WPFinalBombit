@@ -17,13 +17,13 @@ UNIT, POWER = 37, 7
 HEIGHT, WIDTH = 13, 13
 
 def idx(x):
-    return round((x*2+UNIT)/UNIT/2)
+    return floor((x*2+UNIT)/UNIT/2)
 
 class Player():
     def __init__(self):
-        self.x = 0
-        self.y = 0
-        self.is_moving = [0] * 5
+        self.x = UNIT
+        self.y = UNIT
+        self.is_moving = [0, 0, 0, 0, 0]
         self.speed = 3
 
 class Bomb():
@@ -58,6 +58,11 @@ class Map():
                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
             ] 
 
+class DStructure():
+    def __init__(self, player_id, key):
+        self.player_id = player_id
+        self.key = key
+
 class Game():
     def __init__(self):
         self.Map = Map()
@@ -69,21 +74,17 @@ class Game():
                     continue
                 self.Map.obj[y][x] = 1 if randint(1, 4) == 1 else 0
 
-    def addPlayer(self, p1):
-        self.players.append(p1)
+    def addPlayer(self):
+        self.players.append(Player())
 
     def start_game(self):
         self.players[0].x = UNIT
         self.players[0].y = UNIT
-        D = {
-            'Map': self.Map.obj,
-            'player_pos': [(self.players[0].x, self.players[0].y)],
-            'bombs': []
-        }
         # boardcast_status(D)
         # send coor(players[0].x, players[0].y) to players[0]
 
-async def player_control(D):
+async def player_control(dic):
+    D = DStructure(dic['player_id'], dic['key'])
     pid = int(D.player_id)
     if D.key == 'P':
         game.bombs(Bomb(pid, idx(game.players[pid].x)*UNIT, idx(game.players[pid].y)*UNIT), t)
@@ -118,7 +119,7 @@ def valid_position(p, dir):
     if dir == 0:
         if (
             game.Map.obj[idx(p.y)-1][idx(p.x)] == 1 and
-            p.y - (idx(p.y)-1)*UNIT < game.Map.unit + 1
+            p.y - (idx(p.y)-1)*UNIT < UNIT + 1
         ):
             return
         if (
@@ -164,11 +165,13 @@ def valid_position(p, dir):
             p.x += p.speed
             p.y = idx(p.y)*UNIT
 
-def update():
+async def update():
     """
     每1/60秒call一次的function
     """
+    # while 1:
     global t
+    time.sleep(0.01)
     t += 0.01
 
     # 維護每個玩家
@@ -185,6 +188,7 @@ def update():
             if p.is_moving[3]:
                 dir = 3
         valid_position(p, dir)
+        # print(p.x, p.y)
 
     # 維護每個炸彈
     for b in game.bombs:
@@ -193,7 +197,7 @@ def update():
             b.set_fire = True
             print('Boom!')
             bomb_x, bomb_y = idx(b.x), idx(b.y)
-            dir_blocked = [0] * 4
+            dir_blocked = [0, 0, 0, 0]
 
             # 計算火焰要延長幾格
             for j in range(1, POWER+1):
@@ -231,7 +235,7 @@ def update():
                 game.Map.obj[pos[0]][pos[1]] = 0
             game.bombs.remove(b)
 
-def getGameState():
+async def getGameState():
     return {
         'Map': game.Map.obj,
         'player_pos': [[p.x, p.y] for p in game.players]
@@ -248,8 +252,8 @@ class Client:
 connected_clients = set()
 i = {"counter":1}
 # server_socket = None # 要等websockets.server跑過
-def player_control(D):
-    pass
+# def player_control(D):
+#     pass
 
 async def boardcast_status(D):
     # await asyncio.sleep(1)
@@ -263,26 +267,36 @@ async def gaming():
     i["counter"]+=1
     return i
     
+def init_connection(ws):
+    global connected_clients
+    connected_clients.add(ws)
+    game.addPlayer()
+    print("new register",len(connected_clients))
+    message = ws.recv()
+    # data = json.loads(message)
+    # while 1:
+        # if (data["status"]!="Game")
+        # break
 
 async def handler(websocket, path):
-    global connected_clients
-    # Register.
-    print("new register",len(connected_clients))
-    connected_clients.add(websocket)
-    # init
+    
+    # Register & init
+    init_connection(websocket)
+    # print(game.players)
     try:
         while True:
             listener_task = asyncio.ensure_future(websocket.recv())
             producer_task = asyncio.ensure_future(getGameState())
+            refresh_task = asyncio.ensure_future(update())
             done, pending = await asyncio.wait(
-                [listener_task, producer_task],
+                [listener_task, producer_task,refresh_task],
                 return_when=asyncio.FIRST_COMPLETED)
 
             if listener_task in done:
                 message = listener_task.result()
                 print("from client",message)
                 data = json.loads(message)
-                print(type(data))
+                # print(type(data))
                 await player_control(data)
                 # await consumer(message)
             else:
