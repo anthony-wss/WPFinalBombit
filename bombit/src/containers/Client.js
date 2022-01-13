@@ -10,9 +10,9 @@ function connect(){
     ws.onclose = () => {
         console.log('lose connection, retrying')
         // reconnect
-        setTimeout(function() {
-            connect();
-        }, 1000);
+        // setTimeout(function() {
+        //     connect();
+        // }, 1000);
     }
     ws.onmessage = event => {
         let {data} = event
