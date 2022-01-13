@@ -1,7 +1,22 @@
-
+require('dotenv').config()
+import dotenv from "dotenv-defaults";
+import cors from 'cors'
+import router from './src/routes/index.js'
+import bodyParser from 'body-parser';
+dotenv.config();
 const express = require('express')
+const mongoose = require ('mongoose');
 const SocketServer = require('ws').Server
-
+const app = express();
+app.use(bodyParser.json());
+app.use(cors());
+app.use('/api', router)
+mongoose.connect(process.env.MONGO_URL
+  , {useNewUrlParser: true ,useUnifiedTopology: true,})
+  .then((res)=>console.log("mongo db connection created"));
+  app.listen(5000, () =>
+    console.log(`Example app listening on port ${5000}!`),
+  );
 //指定開啟的 port
 const PORT = 4000
 
@@ -9,6 +24,7 @@ const PORT = 4000
 const server = express()
     .listen(PORT, () => console.log(`Listening on ${PORT}`))
 let player_count = 0; 
+
 
 //將 express 交給 SocketServer 開啟 WebSocket 的服務
 const wss = new SocketServer({ server })

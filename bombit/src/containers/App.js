@@ -25,6 +25,7 @@ const App = ()=>{
     const [rank, setRank] = useState(false);
     const [credit, setCredit] = useState(false);
     const [room, setRoom] = useState(false);
+    const [queryRank, setQueryRank] = useState(0);
     console.log(page)
 
     const whichpage = ()=>{
@@ -39,10 +40,14 @@ const App = ()=>{
         const jumpToRankPage = ()=>{
             setPage(2);
             setRank(true);
+            setQueryRank(1);
         }
         const jumpToCreditPage = ()=>{
             setPage(2);
             setCredit(true);
+        }
+        const gotoGameOver = ()=>{
+            setPage(5);
         }
         if (page===1) 
         {
@@ -60,7 +65,10 @@ const App = ()=>{
                 </Button></Col>
                 <Col offset={10}><Button className = "button" type="primary" shape="round" size={'large'} onClick = {jumpToCreditPage} >
                     製作人員
-                </Button></Col>
+                </Button></Col>        
+                <Button className = "button" type="primary"  shape="round" size = {'large'} onClick = {gotoGameOver}>
+                    Go to Gameover
+                </Button>
             </div>
             </>
             )
@@ -71,7 +79,7 @@ const App = ()=>{
                 <div>
                     <Room room={room} setPage={setPage} setRoom = {setRoom} setGameStart = {setGameStart}/>
                     <Tutorial tutorial={tutorial} setTutorial={setTutorial} setPage={setPage}/>
-                    <Rank rank={rank} setRank={setRank} setPage={setPage}/>
+                    <Rank rank={rank} setRank={setRank} setPage={setPage} setQueryRank={setQueryRank} queryRank={queryRank}/>
                     <Credit credit={credit} setCredit={setCredit} setPage={setPage}/>
                 </div>
             )
