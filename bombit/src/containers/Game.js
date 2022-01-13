@@ -5,13 +5,17 @@ import box_img from '../img/box.png'
 import bomb_img from '../img/bomb.png'
 import fire_img from '../img/fire.jpg'
 import Bomb from "../components/Bomb";
-import {sendData, getGameState } from "./Client";
+import {sendData, getGameState, getInitState } from "./Client";
 // sendData({player_id:1,key:" "}) 
 // player_id : int(由伺服器連線時分配) key : String (WASD => 上左下右,P=>空白鍵放炸彈)
 //
 /*
 reference: https://medium.com/@peeyush.pathak18/pixijs-with-react-3cd40738180
 */
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 var loaded = false
 
@@ -21,6 +25,7 @@ function idx(x) {
 
 var t = 0;
 const UNIT = 37, POWER = 7, WIDTH = 13, HEIGHT = 13;
+var id = 0;
 
 class Game extends React.Component {
   constructor(props) {
@@ -79,16 +84,16 @@ class Game extends React.Component {
   keyDown_handler = (key) => {
     switch(key) {
       case "ArrowUp":
-        sendData({player_id:0,key:"Dw"});
+        sendData({player_id:id,key:"Dw"});
         break;
       case "ArrowDown":
-        sendData({player_id:0,key:"Ds"});
+        sendData({player_id:id,key:"Ds"});
         break;
       case "ArrowLeft":
-        sendData({player_id:0,key:"Da"});
+        sendData({player_id:id,key:"Da"});
         break;
       case "ArrowRight":
-        sendData({player_id:0,key:"Dd"});
+        sendData({player_id:id,key:"Dd"});
         break;
       default:
         break;
@@ -98,28 +103,33 @@ class Game extends React.Component {
   keyUp_handler = (key) => {
     switch(key) {
       case "ArrowUp":
-        sendData({player_id:0,key:"Uw"});
+        sendData({player_id:id,key:"Uw"});
         break;
       case "ArrowDown":
-        sendData({player_id:0,key:"Us"});
+        sendData({player_id:id,key:"Us"});
         break;
       case "ArrowLeft":
-        sendData({player_id:0,key:"Ua"});
+        sendData({player_id:id,key:"Ua"});
         break;
       case "ArrowRight":
-        sendData({player_id:0,key:"Ud"});
+        sendData({player_id:id,key:"Ud"});
         break;
       default:
         break;
     }
   }
 
-  initialize = (resource) => {
+  initialize = async (resource) => {
     // 從server接收遊戲常數: UNIT, POWER, WIDTH, HEIGHT
     this.player_texture = resource.player_img.texture
     this.bomb_texture   = resource.bomb_img.texture
     this.fire_texture   = resource.fire_img.texture
     this.box_texture    = resource.box_img.texture
+
+    let gs = getInitState()
+    id = gs.player_id
+    sendData({'msg': `I'm player ${id}`})
+    console.log(`I'm player ${id}`)
 
     const body = document.querySelector('body');
 
@@ -136,19 +146,27 @@ class Game extends React.Component {
     })
   }
 
-  tickerLoop = () => {
+  tickerLoop = async () => {
     // console.log(this.app.stage)
     // 清空stage
     while(this.app.stage.children[0]) {
       this.app.stage.removeChild(this.app.stage.children[0])
     }
     // 接收第一個 GameState
-    var gs = getGameState()
+    let gs = getGameState()
+    // console.log(gs)
+    while (gs === 0) {
+      console.log("GameState not Recived")
+      gs = getGameState()
+      await sleep(300)
+    }
 
-    var player_sprite = new PIXI.Sprite(this.player_texture);
-    player_sprite.x = gs.player_pos[0][0];
-    player_sprite.y = gs.player_pos[0][1];
-    this.app.stage.addChild(player_sprite);
+    for(let i = 0; i < gs.player_pos.length; i++) {
+      let player_sprite = new PIXI.Sprite(this.player_texture);
+      player_sprite.x = gs.player_pos[i][0];
+      player_sprite.y = gs.player_pos[i][1];
+      this.app.stage.addChild(player_sprite);
+    }
     
     // 按照 this.Map.obj 的結果將箱子、炸彈、火焰畫上去
     for(let y = 0; y < HEIGHT; y++) {
