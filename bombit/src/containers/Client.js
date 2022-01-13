@@ -62,7 +62,8 @@ const getHasEnd = () => {
 }
 
 const getScores = () => {
-    return players_score.map((value, idx) => `player ${idx} = ${value}\n`)
+    // return players_score.map((value, idx) => `player ${idx} = ${value}\n`)
+    return players_score
 }
 
 export {sendData, getGameState, getInitState, getHasEnd, getScores}

@@ -132,12 +132,12 @@ class Game extends React.Component {
     })
 
     // 每秒執行大約60次
-    this.app.ticker.add((delta) => {
-      this.tickerLoop();
-    })
+    const main_ticker = new PIXI.Ticker
+    main_ticker.add((delta) => {this.tickerLoop(main_ticker)})
+    main_ticker.start()
   }
 
-  tickerLoop = async () => {
+  tickerLoop = async (main_ticker) => {
     // console.log(this.app.stage)
     // 清空stage
     while(this.app.stage.children[0]) {
@@ -150,6 +150,12 @@ class Game extends React.Component {
       console.log("GameState not Recived")
       gs = getGameState()
       await sleep(300)
+    }
+
+    if (getHasEnd()) {
+      this.app.ticker.remove(this.app.ticker[0]);
+      this.SetUpBeforeGameOver();
+      main_ticker.destroy()
     }
 
     for(let i = 0; i < gs.player_pos.length; i++) {
@@ -197,16 +203,13 @@ class Game extends React.Component {
   /* 導到GameOver的畫面*/
   SetUpBeforeGameOver = ()=>{
     this.props.setGameStart(false);
-    this.props.setPage(1);
+    console.log(getScores())
+    this.props.setPage(5);
   }
   render() {
     return (
       <>
-      {(getHasEnd()?
-        <></>
-        :
         <div ref={this.updatePixiCnt} />
-      )}
         <div id="webgl">
   
         </div>
