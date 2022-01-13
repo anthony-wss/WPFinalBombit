@@ -55,29 +55,5 @@ router.get('/allRank', async(req, res)=>{
         data: null})
     }
 })
-// router.get('/api/query-cards', jsonParser , async (req, res) => {
-//     console.log("inget")
-//     try {
-//         if (req.query.type === "name") 
-//         {
-//             const fin = await ScoreCard.find({name: req.query.queryString})
-//             if (Object.keys(fin).length === 0) res.send({message: `${req.query.type} (${req.query.queryString}) not found!`})
-//             else res.send({messages: fin.map(card =>`${card.name} ${card.subject} ${card.score}`), message: "!!!"})
-//         }
-//         else if (req.query.type === "subject") 
-//         {
-//             const fin = await ScoreCard.find({subject: req.query.queryString})
-//             if (Object.keys(fin).length === 0) res.send({message: `${req.query.type} (${req.query.queryString}) not found!`})
-//             else res.send({messages: fin.map(card =>`${card.name} ${card.subject} ${card.score}`), message: "There is nothing."})
-//         }
-//     } catch (err) {
-//         res.status(400).json({message: err})
-//     }
-
-// })
-// router.delete('/api/clear-db', async (req, res) => {
-//     await ScoreCard.deleteMany()
-// })
-
 
 export default router
