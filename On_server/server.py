@@ -2,7 +2,7 @@ import asyncio
 import json
 import websockets
 import time
-from math import round
+from math import floor
 from random import randint
 # receive : json.loads(message)
 # 收到一個dict物件 {player_id:Int,key:String}
@@ -14,6 +14,7 @@ from random import randint
 
 t = 0
 UNIT, POWER = 37, 7
+HEIGHT, WIDTH = 13, 13
 
 def idx(x):
     return round((x*2+UNIT)/UNIT/2)
@@ -35,13 +36,12 @@ class Bomb():
         self.fires = []
         self.fire_time = self.explode_time + 0.3
 
-class Game():
+class Map():
     def __init__(self):
-        self.Map = {
-            'width': 13,
-            'height': 13,
-            'buf': 12,
-            'obj': [
+        self.width = WIDTH
+        self.height = HEIGHT
+        self.buf = 12
+        self.obj =  [
                 # 0: 空氣, 1: 不可炸障礙物, 2: 炸彈, 3: 火焰
                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                 [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
@@ -56,12 +56,15 @@ class Game():
                 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
                 [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
                 [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            ]
-        }
+            ] 
+
+class Game():
+    def __init__(self):
+        self.Map = Map()
         self.players = []
         self.bombs = []
         for y in range(1, self.Map.height-1):
-            for x in range(1, game.Map.width-1):
+            for x in range(1, self.Map.width-1):
                 if x == 1 and y == 1:
                     continue
                 self.Map.obj[y][x] = 1 if randint(1, 4) == 1 else 0
@@ -79,8 +82,6 @@ class Game():
         }
         # boardcast_status(D)
         # send coor(players[0].x, players[0].y) to players[0]
-
-game = Game()
 
 async def player_control(D):
     pid = int(D.player_id)
@@ -248,6 +249,7 @@ connected_clients = set()
 i = {"counter":1}
 # server_socket = None # 要等websockets.server跑過
 def player_control(D):
+    pass
 
 async def boardcast_status(D):
     # await asyncio.sleep(1)
@@ -299,6 +301,7 @@ async def handler(websocket, path):
 
 # time.sleep(2)
 if __name__ == "__main__":
+    game = Game()
     asyncio.get_event_loop().run_until_complete(websockets.serve(handler, 'linux7.csie.ntu.edu.tw', 1928))
     asyncio.get_event_loop().run_forever()
 
