@@ -2,6 +2,8 @@ var ws = new WebSocket('ws://linux7.csie.ntu.edu.tw:1928')
 var gameState = 0
 var initState = 0
 var hasinit = false
+var hasend = false
+var players_score = [0, 0, 0, 0]
 
 function connect(){
     //使用 WebSocket 的網址向 Server 開啟連結
@@ -26,6 +28,11 @@ function connect(){
             initState = msg
             hasinit = true
         }
+        if (msg.Map === "End") {
+            console.log(msg.players_score)
+            hasend = true
+            players_score = msg.players_score
+        }
         else
             gameState = msg
         // console.log(data)
@@ -49,4 +56,13 @@ const getGameState = () => {
 const getInitState = () => {
     return initState
 }
-export {sendData, getGameState, getInitState}
+
+const getHasEnd = () => {
+    return hasend
+}
+
+const getScores = () => {
+    return players_score.map((value, idx) => `player ${idx} = ${value}\n`)
+}
+
+export {sendData, getGameState, getInitState, getHasEnd, getScores}

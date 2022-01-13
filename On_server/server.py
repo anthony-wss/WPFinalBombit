@@ -14,8 +14,30 @@ from random import randint
 
 t = 0
 UNIT, POWER = 37, 7
-HEIGHT, WIDTH = 13, 13
+HEIGHT, WIDTH = 15, 17
 counter = 0
+sent = False
+
+MAP = [
+    # 0: 空氣, 1: 不可炸障礙物, 2: 炸彈, 3: 火焰, 4: 可以炸掉的東西
+    [
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [1, 0, 1, 4, 0, 1, 0, 0, 0, 4, 0, 1, 4, 4, 1, 0, 1],
+        [1, 0, 4, 4, 4, 4, 0, 1, 1, 1, 4, 4, 0, 4, 4, 0, 1],
+        [1, 0, 1, 1, 0, 1, 4, 4, 0, 4, 4, 1, 0, 1, 1, 0, 1],
+        [1, 4, 1, 0, 0, 0, 4, 1, 4, 1, 4, 0, 0, 0, 1, 4, 1],
+        [1, 4, 0, 4, 1, 1, 4, 0, 1, 0, 4, 1, 1, 0, 0, 4, 1],
+        [1, 4, 1, 4, 1, 4, 0, 1, 1, 1, 4, 4, 0, 0, 0, 4, 1],
+        [1, 4, 1, 4, 4, 4, 1, 1, 1, 1, 1, 4, 4, 4, 1, 4, 1],
+        [1, 0, 1, 0, 1, 4, 0, 1, 1, 1, 0, 0, 1, 0, 1, 4, 1],
+        [1, 0, 0, 0, 1, 1, 4, 4, 1, 4, 0, 1, 1, 4, 4, 4, 1],
+        [1, 0, 1, 0, 0, 0, 0, 1, 4, 1, 0, 0, 0, 0, 1, 4, 1],
+        [1, 0, 1, 1, 0, 1, 0, 4, 4, 4, 4, 1, 0, 1, 1, 0, 1],
+        [1, 0, 4, 4, 4, 4, 4, 1, 1, 1, 4, 0, 0, 0, 0, 0, 1],
+        [1, 4, 1, 4, 4, 1, 0, 4, 4, 4, 0, 1, 0, 4, 1, 0, 1],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    ]
+]
 
 def idx(x):
     return floor((x*2+UNIT)/UNIT/2)
@@ -25,7 +47,8 @@ class Player():
         self.x = UNIT
         self.y = UNIT
         self.is_moving = [0, 0, 0, 0, 0]
-        self.speed = 3
+        self.speed = 2
+        self.score = 0
 
 class Bomb():
     def __init__(self, player_id, x, y, t):
@@ -42,22 +65,7 @@ class Map():
         self.width = WIDTH
         self.height = HEIGHT
         self.buf = 12
-        self.obj =  [
-                # 0: 空氣, 1: 不可炸障礙物, 2: 炸彈, 3: 火焰
-                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-                [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
-                [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
-                [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
-                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-                [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-                [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-            ] 
+        self.obj =  MAP[0]
 
 class DStructure():
     def __init__(self, player_id, key):
@@ -69,27 +77,22 @@ class Game():
         self.Map = Map()
         self.players = []
         self.bombs = []
-        for y in range(1, self.Map.height-1):
-            for x in range(1, self.Map.width-1):
-                if x == 1 and y == 1:
-                    continue
-                self.Map.obj[y][x] = 1 if randint(1, 4) == 1 else 0
 
-    def addPlayer(self):
+    def addPlayer(self, pid):
         self.players.append(Player())
-
-    def start_game(self):
-        self.players[0].x = UNIT
-        self.players[0].y = UNIT
-        # boardcast_status(D)
-        # send coor(players[0].x, players[0].y) to players[0]
+        if pid == 0:
+            self.players[-1].x = 5*UNIT
+            self.players[-1].y = 5*UNIT
+        else:
+            self.players[-1].x = 1*UNIT
+            self.players[-1].y = 1*UNIT
 
 async def player_control(dic):
     D = DStructure(dic['player_id'], dic['key'])
     pid = int(D.player_id)
     if D.key == 'P':
-        game.bombs(Bomb(pid, idx(game.players[pid].x)*UNIT, idx(game.players[pid].y)*UNIT), t)
-        game.Map.obj[idx(game.players[pid].x)][idx(game.players[pid].y)] = 2
+        game.bombs.append(Bomb(pid, idx(game.players[pid].x)*UNIT, idx(game.players[pid].y)*UNIT, t))
+        game.Map.obj[idx(game.players[pid].y)][idx(game.players[pid].x)] = 2
     elif D.key == 'Dw':
         game.players[pid].is_moving[0] = 1
         game.players[pid].is_moving[4] = 1
@@ -119,7 +122,7 @@ def valid_position(p, dir):
 
     if dir == 0:
         if (
-            game.Map.obj[idx(p.y)-1][idx(p.x)] == 1 and
+            (game.Map.obj[idx(p.y)-1][idx(p.x)] == 1 or game.Map.obj[idx(p.y)-1][idx(p.x)] == 2 or game.Map.obj[idx(p.y)-1][idx(p.x)] == 4) and
             p.y - (idx(p.y)-1)*UNIT < UNIT + 1
         ):
             return
@@ -131,7 +134,7 @@ def valid_position(p, dir):
             p.y -= p.speed
     elif dir == 1:
         if (
-            game.Map.obj[idx(p.y)+1][idx(p.x)] == 1 and
+            (game.Map.obj[idx(p.y)+1][idx(p.x)] == 1 or game.Map.obj[idx(p.y)+1][idx(p.x)] == 2 or game.Map.obj[idx(p.y)+1][idx(p.x)] == 4) and
             (idx(p.y)+1)*UNIT - p.y < UNIT + 1
         ):
             return
@@ -143,7 +146,7 @@ def valid_position(p, dir):
             p.y += p.speed
     elif dir == 2:
         if (
-            game.Map.obj[idx(p.y)][idx(p.x)-1] == 1 and
+            (game.Map.obj[idx(p.y)][idx(p.x)-1] == 1 or game.Map.obj[idx(p.y)][idx(p.x)-1] == 2 or game.Map.obj[idx(p.y)][idx(p.x)-1] == 4) and
             p.x - (idx(p.x)-1)*UNIT < UNIT + 1
         ):
             return
@@ -155,7 +158,7 @@ def valid_position(p, dir):
             p.y = idx(p.y)*UNIT
     elif dir == 3:
         if (
-            game.Map.obj[idx(p.y)][idx(p.x)+1] == 1 and
+            (game.Map.obj[idx(p.y)][idx(p.x)+1] == 1 or game.Map.obj[idx(p.y)][idx(p.x)+1] == 2 or game.Map.obj[idx(p.y)][idx(p.x)+1] == 4) and
             (idx(p.x)+1)*UNIT - p.x < UNIT + 1
         ):
             return
@@ -197,6 +200,7 @@ async def update():
         if t > b.explode_time and not b.set_fire:
             b.set_fire = True
             print('Boom!')
+            await boardcast_status({"Map": "End", "players_score": [t*1000, 0, 0, 0]})
             bomb_x, bomb_y = idx(b.x), idx(b.y)
             dir_blocked = [0, 0, 0, 0]
 
@@ -207,6 +211,8 @@ async def update():
                     if bomb_y-j >= 0 and game.Map.obj[bomb_y-j][bomb_x] != 1:
                         game.Map.obj[bomb_y-j][bomb_x] = 3
                         b.fires.append((bomb_y-j, bomb_x))
+                        if game.Map.obj[bomb_y-j][bomb_x] == 4:
+                            dir_blocked[0] = 1
                     else:
                         dir_blocked[0] = 1
 
@@ -214,6 +220,8 @@ async def update():
                     if bomb_y+j < game.Map.height and game.Map.obj[bomb_y+j][bomb_x] != 1:
                         game.Map.obj[bomb_y+j][bomb_x] = 3
                         b.fires.append((bomb_y+j, bomb_x))
+                        if game.Map.obj[bomb_y+j][bomb_x] == 4:
+                            dir_blocked[1] = 1
                     else:
                         dir_blocked[1] = 1
 
@@ -221,6 +229,8 @@ async def update():
                     if bomb_x-j >= 0 and game.Map.obj[bomb_y][bomb_x-j] != 1:
                         game.Map.obj[bomb_y][bomb_x-j] = 3
                         b.fires.append((bomb_y, bomb_x-j))
+                        if game.Map.obj[bomb_y][bomb_x-j] == 4:
+                            dir_blocked[2] = 1
                     else:
                         dir_blocked[2] = 1
 
@@ -228,12 +238,15 @@ async def update():
                     if bomb_x+j < game.Map.width and game.Map.obj[bomb_y][bomb_x+j] != 1:
                         game.Map.obj[bomb_y][bomb_x+j] = 3
                         b.fires.append((bomb_y, bomb_x+j))
+                        if game.Map.obj[bomb_y][bomb_x+j] == 4:
+                            dir_blocked[3] = 1
                     else:
                         dir_blocked[3] = 1
         
         if t > b.fire_time:
             for pos in b.fires:
                 game.Map.obj[pos[0]][pos[1]] = 0
+            game.Map.obj[idx(b.y)][idx(b.x)] = 0
             game.bombs.remove(b)
 
 async def getGameState():
@@ -258,8 +271,10 @@ i = {"counter":1}
 
 async def boardcast_status(D):
     # await asyncio.sleep(1)
+    global sent
     for ws in connected_clients:
-        await ws.send(D)
+        await ws.send(f"{D}".replace("'",'"',100))
+    sent = True
     
 async def init_connection(ws):
     global connected_clients
@@ -273,12 +288,11 @@ async def init_connection(ws):
     print(message)
     global counter
     connected_clients.add(ws)
-    game.addPlayer()
+    game.addPlayer(len(connected_clients))
     counter+=1
     print("finished initialization")
     return
     
-
     # data = json.loads(message)
     # print(data)/
     # while 1:
@@ -303,7 +317,7 @@ async def handler(websocket, path):
 
             if listener_task in done:
                 message = listener_task.result()
-                print("from client",message)
+                # print("from client",message)
                 data = json.loads(message)
                 # print(type(data))
                 await player_control(data)
@@ -317,6 +331,9 @@ async def handler(websocket, path):
                 await asyncio.wait([ws.send(f"{message}".replace("'",'"',100)) for ws in connected_clients])
             else:
                 producer_task.cancel()
+
+            if sent:
+                exit()
     finally:
         print("lose a client")
         connected_clients.remove(websocket)

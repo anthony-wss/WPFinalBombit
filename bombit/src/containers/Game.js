@@ -5,13 +5,16 @@ import box_img from '../img/box.png'
 import bomb_img from '../img/bomb.png'
 import fire_img from '../img/fire.jpg'
 import Bomb from "../components/Bomb";
-import {sendData, getGameState, getInitState } from "./Client";
+import { useState } from "react";
+import {sendData, getGameState, getInitState, getHasEnd, getScores } from "./Client";
 // sendData({player_id:1,key:" "}) 
 // player_id : int(由伺服器連線時分配) key : String (WASD => 上左下右,P=>空白鍵放炸彈)
 //
 /*
 reference: https://medium.com/@peeyush.pathak18/pixijs-with-react-3cd40738180
 */
+
+var printtt = false
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -24,31 +27,16 @@ function idx(x) {
 }
 
 var t = 0;
-const UNIT = 37, POWER = 7, WIDTH = 13, HEIGHT = 13;
+const UNIT = 37, POWER = 7, WIDTH = 17, HEIGHT = 15;
 var id = 0;
 
 class Game extends React.Component {
   constructor(props) {
-    super(props); 
+    super(props);
     this.pixi_cnt = null;
-    this.Map = [
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    ]
     this.Canvas = {
-      width: 500,
-      height: 500
+      width: UNIT * WIDTH,
+      height: UNIT * HEIGHT
     }
     this.app = new PIXI.Application({
       view: document.getElementById('main'),
@@ -94,6 +82,9 @@ class Game extends React.Component {
         break;
       case "ArrowRight":
         sendData({player_id:id,key:"Dd"});
+        break;
+      case " ":
+        sendData({player_id:id,key:"P"});
         break;
       default:
         break;
@@ -167,6 +158,11 @@ class Game extends React.Component {
       player_sprite.y = gs.player_pos[i][1];
       this.app.stage.addChild(player_sprite);
     }
+
+    if(!printtt) {
+      console.log(gs.Map)
+      printtt = true
+    }
     
     // 按照 this.Map.obj 的結果將箱子、炸彈、火焰畫上去
     for(let y = 0; y < HEIGHT; y++) {
@@ -189,6 +185,12 @@ class Game extends React.Component {
           sprite.y = y* UNIT;
           this.app.stage.addChild(sprite);
         }
+        else if (gs.Map[y][x] == 4) {
+          let sprite = new PIXI.Sprite(this.fire_texture);
+          sprite.x = x* UNIT;
+          sprite.y = y* UNIT;
+          this.app.stage.addChild(sprite);
+        }
       }
     }
   }
@@ -200,14 +202,18 @@ class Game extends React.Component {
   render() {
     return (
       <>
+      {(getHasEnd()?
+        <></>
+        :
         <div ref={this.updatePixiCnt} />
+      )}
         <div id="webgl">
   
         </div>
 
         <div id="type"></div>
         <div id="rendere"></div>
-        <div>交給王秀軒了<button onClick = {this.SetUpBeforeGameOver}>jump to GameOver.js</button></div>
+        <div>分數：{getScores()}<button onClick = {this.SetUpBeforeGameOver}>jump to GameOver.js</button></div>
       </>
     )
   }
