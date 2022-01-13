@@ -18,6 +18,7 @@ function connect(){
         let {data} = event
         let msg = JSON.parse(data)
         console.log(msg)
+        // console.log(data)
         console.log(typeof(msg))
         // console.log(data)
     }
