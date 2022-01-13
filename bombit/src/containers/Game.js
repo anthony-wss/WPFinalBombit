@@ -1,12 +1,11 @@
 import * as PIXI from "pixi.js";
 import React from 'react';
-import Player from "../components/Player";
 import bunny_img from '../img/bunny.png';
 import box_img from '../img/box.png'
 import bomb_img from '../img/bomb.png'
 import fire_img from '../img/fire.jpg'
 import Bomb from "../components/Bomb";
-import sendData from "./Client";
+import {sendData, getGameState } from "./Client";
 // sendData({player_id:1,key:" "}) 
 // player_id : int(由伺服器連線時分配) key : String (WASD => 上左下右,P=>空白鍵放炸彈)
 //
@@ -77,6 +76,44 @@ class Game extends React.Component {
     }
   };
 
+  keyDown_handler = (key) => {
+    switch(key) {
+      case "ArrowUp":
+        sendData({player_id:0,key:"Dw"});
+        break;
+      case "ArrowDown":
+        sendData({player_id:0,key:"Ds"});
+        break;
+      case "ArrowLeft":
+        sendData({player_id:0,key:"Da"});
+        break;
+      case "ArrowRight":
+        sendData({player_id:0,key:"Dd"});
+        break;
+      default:
+        break;
+    }
+  }
+
+  keyUp_handler = (key) => {
+    switch(key) {
+      case "ArrowUp":
+        sendData({player_id:0,key:"Uw"});
+        break;
+      case "ArrowDown":
+        sendData({player_id:0,key:"Us"});
+        break;
+      case "ArrowLeft":
+        sendData({player_id:0,key:"Ua"});
+        break;
+      case "ArrowRight":
+        sendData({player_id:0,key:"Ud"});
+        break;
+      default:
+        break;
+    }
+  }
+
   initialize = (resource) => {
     // 從server接收遊戲常數: UNIT, POWER, WIDTH, HEIGHT
     this.player_texture = resource.player_img.texture
@@ -87,10 +124,10 @@ class Game extends React.Component {
     const body = document.querySelector('body');
 
     body.addEventListener('keydown',(e) => {
-      this.player.keyDown_handler(e.key);
+      this.keyDown_handler(e.key);
     })
     body.addEventListener('keyup',(e) => {
-      this.player.keyUp_handler(e.key)
+      this.keyUp_handler(e.key)
     })
 
     // 每秒執行大約60次
@@ -106,45 +143,34 @@ class Game extends React.Component {
       this.app.stage.removeChild(this.app.stage.children[0])
     }
     // 接收第一個 GameState
-    var gs = {
-      Map: [
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      ],
-      player_pos: [[1, 1]]
-    }
+    var gs = getGameState()
 
     var player_sprite = new PIXI.Sprite(this.player_texture);
-    player_sprite.x = gs.player_pos[0][0]*UNIT;
-    player_sprite.y = gs.player_pos[0][1]*UNIT;
+    player_sprite.x = gs.player_pos[0][0];
+    player_sprite.y = gs.player_pos[0][1];
     this.app.stage.addChild(player_sprite);
     
     // 按照 this.Map.obj 的結果將箱子、炸彈、火焰畫上去
     for(let y = 0; y < HEIGHT; y++) {
       for(let x = 0; x < WIDTH; x++) {
         if (gs.Map[y][x] == 1) {
-          var sprite = new PIXI.Sprite(this.box_texture);
+          let sprite = new PIXI.Sprite(this.box_texture);
+          sprite.x = x* UNIT;
+          sprite.y = y* UNIT;
+          this.app.stage.addChild(sprite);
         }
         else if (gs.Map[y][x] == 2) {
-          var sprite = new PIXI.Sprite(this.bomb_texture);
+          let sprite = new PIXI.Sprite(this.bomb_texture);
+          sprite.x = x* UNIT;
+          sprite.y = y* UNIT;
+          this.app.stage.addChild(sprite);
         }
         else if (gs.Map[y][x] == 3) {
-          var sprite = new PIXI.Sprite(this.fire_texture);
+          let sprite = new PIXI.Sprite(this.fire_texture);
+          sprite.x = x* UNIT;
+          sprite.y = y* UNIT;
+          this.app.stage.addChild(sprite);
         }
-        sprite.x = x* UNIT;
-        sprite.y = y* UNIT;
-        this.app.stage.addChild(sprite);
       }
     }
   }

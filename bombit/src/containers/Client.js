@@ -1,4 +1,6 @@
 var ws = new WebSocket('ws://linux7.csie.ntu.edu.tw:1928')
+var gameState = 0
+
 function connect(){
     //使用 WebSocket 的網址向 Server 開啟連結
     ws = new WebSocket('ws://linux7.csie.ntu.edu.tw:1928')
@@ -10,16 +12,17 @@ function connect(){
     ws.onclose = () => {
         console.log('lose connection, retrying')
         // reconnect
-        // setTimeout(function() {
-        //     connect();
-        // }, 1000);
+        setTimeout(function() {
+            connect();
+        }, 1000);
     }
     ws.onmessage = event => {
         let {data} = event
         let msg = JSON.parse(data)
-        console.log(msg)
+        // console.log(msg.player_pos)
+        gameState = msg
         // console.log(data)
-        console.log(typeof(msg))
+        // console.log(typeof(msg))
         // console.log(data)
     }
     
@@ -32,4 +35,8 @@ const sendData = async (data) => {
     JSON.stringify(data));
 
 };
-export default sendData
+
+const getGameState = () => {
+    return gameState
+}
+export {sendData, getGameState}
