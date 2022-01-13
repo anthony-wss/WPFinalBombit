@@ -15,6 +15,7 @@ from random import randint
 t = 0
 UNIT, POWER = 37, 7
 HEIGHT, WIDTH = 13, 13
+counter = 0
 
 def idx(x):
     return floor((x*2+UNIT)/UNIT/2)
@@ -259,30 +260,38 @@ async def boardcast_status(D):
     # await asyncio.sleep(1)
     for ws in connected_clients:
         await ws.send(D)
-
-
-async def gaming():
-    global i 
-    time.sleep(0.01)
-    i["counter"]+=1
-    return i
     
-def init_connection(ws):
+async def init_connection(ws):
     global connected_clients
+    print("new register",len(connected_clients))
+
+    init_data = {"Map":"Welcome","player_id":len(connected_clients)}
+    await ws.send(f"{init_data}".replace("'",'"',100))
+    print("sent",init_data)
+
+    message = await ws.recv()
+    print(message)
+    global counter
     connected_clients.add(ws)
     game.addPlayer()
-    print("new register",len(connected_clients))
-    message = ws.recv()
+    counter+=1
+    print("finished initialization")
+    return
+    
+
     # data = json.loads(message)
+    # print(data)/
     # while 1:
         # if (data["status"]!="Game")
         # break
 
 async def handler(websocket, path):
-    
     # Register & init
-    init_connection(websocket)
+    await init_connection(websocket)
     # print(game.players)
+    # print("lose a client")
+    # connected_clients.remove(websocket)
+    # return 
     try:
         while True:
             listener_task = asyncio.ensure_future(websocket.recv())
@@ -304,6 +313,7 @@ async def handler(websocket, path):
 
             if producer_task in done:
                 message = producer_task.result()
+                # print("send",message['player_pos'])
                 await asyncio.wait([ws.send(f"{message}".replace("'",'"',100)) for ws in connected_clients])
             else:
                 producer_task.cancel()
