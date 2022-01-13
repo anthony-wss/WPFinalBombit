@@ -82,7 +82,7 @@ class Game():
 
 game = Game()
 
-def player_control(D):
+async def player_control(D):
     pid = int(D.player_id)
     if D.key == 'P':
         game.bombs(Bomb(pid, idx(game.players[pid].x)*UNIT, idx(game.players[pid].y)*UNIT), t)
@@ -236,19 +236,87 @@ def getGameState():
         'player_pos': [[p.x, p.y] for p in game.players]
     }
 
-async def echo(websocket, path):
-    print('New_client')
-    await websocket.send(json.dumps({"type": "handshake"}))
-    async for message in websocket:
-        print(message,'received from client')
-        data = json.loads(message)
-        print(type(data))
+
+
+class Client:
+    # 建構式
+    def __init__(self,WS):
+        self.status = "Inited"  # Inited,Waiting,Gaming
+        self.ws = WS
+
+connected_clients = set()
+i = {"counter":1}
+# server_socket = None # 要等websockets.server跑過
+def player_control(D):
+
+async def boardcast_status(D):
+    # await asyncio.sleep(1)
+    for ws in connected_clients:
+        await ws.send(D)
+
+
+async def gaming():
+    global i 
+    time.sleep(0.01)
+    i["counter"]+=1
+    return i
+    
+
+async def handler(websocket, path):
+    global connected_clients
+    # Register.
+    print("new register",len(connected_clients))
+    connected_clients.add(websocket)
+    # init
+    try:
+        while True:
+            listener_task = asyncio.ensure_future(websocket.recv())
+            producer_task = asyncio.ensure_future(getGameState())
+            done, pending = await asyncio.wait(
+                [listener_task, producer_task],
+                return_when=asyncio.FIRST_COMPLETED)
+
+            if listener_task in done:
+                message = listener_task.result()
+                print("from client",message)
+                data = json.loads(message)
+                print(type(data))
+                await player_control(data)
+                # await consumer(message)
+            else:
+                listener_task.cancel()
+
+            if producer_task in done:
+                message = producer_task.result()
+                await asyncio.wait([ws.send(f"{message}".replace("'",'"',100)) for ws in connected_clients])
+            else:
+                producer_task.cancel()
+    finally:
+        print("lose a client")
+        connected_clients.remove(websocket)
+
+
+
+# time.sleep(2)
+if __name__ == "__main__":
+    asyncio.get_event_loop().run_until_complete(websockets.serve(handler, 'linux7.csie.ntu.edu.tw', 1928))
+    asyncio.get_event_loop().run_forever()
+
+
+# for debugging
+# async def echo(websocket, path):
+#     print('New_client')
+#     await websocket.send(json.dumps({"type": "handshake"}))
+#     async for message in websocket:
+#         print(message,'received from client')
+#         data = json.loads(message)
+#         print(type(data))
         # for i in range(60):
         #     time.sleep(0.02)
         # greeting = f"Hello {message}!"
             # await websocket.send(message)
         # print(f"> {greeting}")
 
-asyncio.get_event_loop().run_until_complete(
-    websockets.serve(echo, 'linux7.csie.ntu.edu.tw', 1928))
-asyncio.get_event_loop().run_forever()
+# asyncio.get_event_loop().run_until_complete(
+#     websockets.serve(echo, 'linux7.csie.ntu.edu.tw', 1928))
+# asyncio.get_event_loop().run_forever()
