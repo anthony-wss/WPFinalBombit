@@ -18,9 +18,16 @@ const Room = ({room, setPage, setRoom, setGameStart})=>{
         setRoom(false);
         setGameStart(true);
     }
-    const wait = ()=>{
-        setWait(true);
-
+    const wait = async ()=>{
+        setClickedWait(true)
+        setOnMessage()
+        var player_cnt = getPlayerCnt()
+        while (player_cnt !== 2) {
+            setPlayerCnt(player_cnt);
+            await sleep(1000)
+            player_cnt = getPlayerCnt()
+        }
+        jumpToGamePage()
         // setWait(false);
     }
     // useBeforeunload(() => alert('You’ll lose your data!'));

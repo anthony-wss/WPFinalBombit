@@ -1,12 +1,20 @@
 import * as PIXI from "pixi.js";
 import React from 'react';
-import bunny_img from '../img/bunny.png';
+import chara_1_img from '../img/chara_1.PNG';
+import chara_2_img from '../img/chara_2.PNG';
+import chara_3_img from '../img/chara_3.PNG';
+import chara_4_img from '../img/chara_4.PNG';
 import box_img from '../img/box.png'
 import bomb_img from '../img/bomb.png'
-import fire_img from '../img/fire.jpg'
-import Bomb from "../components/Bomb";
-import { useState } from "react";
-import {sendData, getGameState, getInitState, getHasEnd, getScores } from "./Client";
+import fire_img from '../img/fire.png'
+import bag_img from '../img/bag.PNG';
+import bush_img from '../img/bush.PNG';
+import stone_img from '../img/stone.PNG';
+import trunk_img from '../img/trunk.PNG';
+import bomb_up_img from '../img/bomb_up.PNG';
+import power_up_img from '../img/power_up.PNG';
+import speed_up_img from '../img/speed_up.PNG';
+import {sendData, getGameState, getInitState, getHasEnd, getScores, getPlayerCnt } from "./Client";
 // sendData({player_id:1,key:" "}) 
 // player_id : int(由伺服器連線時分配) key : String (WASD => 上左下右,P=>空白鍵放炸彈)
 //
@@ -26,8 +34,7 @@ function idx(x) {
   return Math.floor((x*2+UNIT)/UNIT/2)
 }
 
-var t = 0;
-const UNIT = 37, POWER = 7, WIDTH = 17, HEIGHT = 15;
+const UNIT = 37, WIDTH = 17, HEIGHT = 15;
 var id = 0;
 
 class Game extends React.Component {
@@ -57,10 +64,20 @@ class Game extends React.Component {
     // 載入圖片
     if (!loaded) {
       PIXI.Loader.shared
-        .add('player_img', bunny_img)
+        .add('chara_1_img', chara_1_img)
+        .add('chara_2_img', chara_2_img)
+        .add('chara_3_img', chara_3_img)
+        .add('chara_4_img', chara_4_img)
         .add('box_img', box_img)
         .add('bomb_img', bomb_img)
         .add('fire_img', fire_img)
+        .add('bag_img', bag_img)
+        .add('bush_img', bush_img)
+        .add('stone_img', stone_img)
+        .add('trunk_img', trunk_img)
+        .add('bomb_up_img', bomb_up_img)
+        .add('power_up_img', power_up_img)
+        .add('speed_up_img', speed_up_img)
         .load((loader, resource) => {
           console.log('Player Loader Done');
           this.initialize(resource);
@@ -111,16 +128,30 @@ class Game extends React.Component {
   }
 
   initialize = async (resource) => {
-    // 從server接收遊戲常數: UNIT, POWER, WIDTH, HEIGHT
-    this.player_texture = resource.player_img.texture
+    // 從server接收玩家id
+    let gs = getInitState()
+    sendData({'msg': `I'm player ${gs.player_id}`})
+    console.log(`I'm player ${gs.player_id}`)
+
+    if (gs.player_id === 0)
+      this.player_texture = resource.chara_1_img.texture
+    else if (gs.player_id === 1)
+      this.player_texture = resource.chara_2_img.texture
+    else if (gs.player_id === 2)
+      this.player_texture = resource.chara_3_img.texture
+    else if (gs.player_id === 3)
+      this.player_texture = resource.chara_4_img.texture
+
     this.bomb_texture   = resource.bomb_img.texture
     this.fire_texture   = resource.fire_img.texture
     this.box_texture    = resource.box_img.texture
-
-    let gs = getInitState()
-    id = gs.player_id
-    sendData({'msg': `I'm player ${id}`})
-    console.log(`I'm player ${id}`)
+    this.bag_texture    = resource.bag_img.texture
+    this.bush_texture   = resource.bush_img.texture
+    this.stone_texture  = resource.stone_img.texture
+    this.trunk_texture  = resource.trunk_img.texture
+    this.bomb_up_texture = resource.bomb_up_img.texture
+    this.power_up_texture = resource.power_up_img.texture
+    this.speed_up_texture = resource.speed_up_img.texture
 
     const body = document.querySelector('body');
 
@@ -132,7 +163,7 @@ class Game extends React.Component {
     })
 
     // 每秒執行大約60次
-    const main_ticker = new PIXI.Ticker
+    const main_ticker = new PIXI.Ticker()
     main_ticker.add((delta) => {this.tickerLoop(main_ticker)})
     main_ticker.start()
   }
@@ -149,7 +180,7 @@ class Game extends React.Component {
     while (gs === 0) {
       console.log("GameState not Recived")
       gs = getGameState()
-      await sleep(300)
+      await sleep(500)
     }
 
     if (getHasEnd()) {
@@ -165,34 +196,86 @@ class Game extends React.Component {
       this.app.stage.addChild(player_sprite);
     }
 
+    // Debug用
+    // var d1 = new PIXI.Sprite(this.stone_texture);
+    // d1.width = 5;
+    // d1.height = 5;
+    // d1.x = gs.player_pos[0][0] + UNIT/2;
+    // d1.y = gs.player_pos[0][1] + 9;
+    // this.app.stage.addChild(d1)
+    // var d2 = new PIXI.Sprite(this.stone_texture);
+    // d2.width = 5;
+    // d2.height = 5;
+    // d2.x = gs.player_pos[0][0] + 9;
+    // d2.y = gs.player_pos[0][1] + UNIT/2;
+    // this.app.stage.addChild(d2)
+    // var d3 = new PIXI.Sprite(this.stone_texture);
+    // d3.width = 5;
+    // d3.height = 5;
+    // d3.x = gs.player_pos[0][0] + UNIT/2;
+    // d3.y = gs.player_pos[0][1] + UNIT - 9;
+    // this.app.stage.addChild(d3)
+    // var d4 = new PIXI.Sprite(this.stone_texture);
+    // d4.width = 5;
+    // d4.height = 5;
+    // d4.x = gs.player_pos[0][0] + UNIT - 9;
+    // d4.y = gs.player_pos[0][1] + UNIT/2;
+    // this.app.stage.addChild(d4)
+
     if(!printtt) {
       console.log(gs.Map)
+      console.log(gs.player_pos)
       printtt = true
     }
     
     // 按照 this.Map.obj 的結果將箱子、炸彈、火焰畫上去
     for(let y = 0; y < HEIGHT; y++) {
       for(let x = 0; x < WIDTH; x++) {
-        if (gs.Map[y][x] == 1) {
+        if (gs.Map[y][x] === 1) {
+          // 牆壁
           let sprite = new PIXI.Sprite(this.box_texture);
           sprite.x = x* UNIT;
           sprite.y = y* UNIT;
           this.app.stage.addChild(sprite);
         }
-        else if (gs.Map[y][x] == 2) {
+        else if (gs.Map[y][x] === 2) {
+          // 炸彈
           let sprite = new PIXI.Sprite(this.bomb_texture);
           sprite.x = x* UNIT;
           sprite.y = y* UNIT;
           this.app.stage.addChild(sprite);
         }
-        else if (gs.Map[y][x] == 3) {
+        else if (gs.Map[y][x] === 3) {
+          // 炸彈的火焰
           let sprite = new PIXI.Sprite(this.fire_texture);
           sprite.x = x* UNIT;
           sprite.y = y* UNIT;
           this.app.stage.addChild(sprite);
         }
-        else if (gs.Map[y][x] == 4) {
-          let sprite = new PIXI.Sprite(this.fire_texture);
+        else if (gs.Map[y][x] === 4) {
+          // 可以炸的道具
+          let sprite = new PIXI.Sprite(this.bag_texture);
+          sprite.x = x* UNIT;
+          sprite.y = y* UNIT;
+          this.app.stage.addChild(sprite);
+        }
+        else if (gs.Map[y][x] === 5) {
+          // 鞋子
+          let sprite = new PIXI.Sprite(this.speed_up_texture)
+          sprite.x = x* UNIT;
+          sprite.y = y* UNIT;
+          this.app.stage.addChild(sprite);
+        }
+        else if (gs.Map[y][x] === 6) {
+          // 藥水
+          let sprite = new PIXI.Sprite(this.power_up_texture)
+          sprite.x = x* UNIT;
+          sprite.y = y* UNIT;
+          this.app.stage.addChild(sprite);
+        }
+        else if (gs.Map[y][x] === 7) {
+          // 炸彈+1
+          let sprite = new PIXI.Sprite(this.bomb_up_texture)
           sprite.x = x* UNIT;
           sprite.y = y* UNIT;
           this.app.stage.addChild(sprite);
@@ -206,6 +289,11 @@ class Game extends React.Component {
     console.log(getScores())
     this.props.setPage(5);
   }
+
+  CanStartGame = () => {
+    return getPlayerCnt() === 1
+  }
+
   render() {
     return (
       <>
@@ -216,7 +304,7 @@ class Game extends React.Component {
 
         <div id="type"></div>
         <div id="rendere"></div>
-        <div>分數：{getScores()}<button onClick = {this.SetUpBeforeGameOver}>jump to GameOver.js</button></div>
+        <div>分數:{getScores()}<button onClick = {this.SetUpBeforeGameOver}>jump to GameOver.js</button></div>
       </>
     )
   }
