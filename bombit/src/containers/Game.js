@@ -291,7 +291,7 @@ class Game extends React.Component {
   }
 
   CanStartGame = () => {
-    return getPlayerCnt() === 4
+    return getPlayerCnt() === 1
   }
 
   render() {

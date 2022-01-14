@@ -21,12 +21,21 @@ function connect(){
             connect();
         }, 1000);
     }
+    
+    //接收 Server 發送的訊息
+
+}
+connect()
+
+const setOnMessage = () => {
     ws.onmessage = event => {
         let {data} = event
         let msg = JSON.parse(data)
         // console.log(msg.player_pos)
         if (!hasinit) {
             initState = msg
+            player_cnt = msg.cur_player_cnt
+            console.log(player_cnt)
             hasinit = true
         }
         if (msg.Map === "End") {
@@ -40,11 +49,8 @@ function connect(){
         // console.log(typeof(msg))
         // console.log(data)
     }
-    
-    //接收 Server 發送的訊息
-
 }
-connect()
+
 const sendData = async (data) => {
     await ws.send(
     JSON.stringify(data));
@@ -71,4 +77,4 @@ const getPlayerCnt = () => {
     return player_cnt
 }
 
-export {sendData, getGameState, getInitState, getHasEnd, getScores, getPlayerCnt}
+export {sendData, getGameState, getInitState, getHasEnd, getScores, getPlayerCnt, setOnMessage}
