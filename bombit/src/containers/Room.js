@@ -41,7 +41,7 @@ const Room = ({room, setPage, setRoom, setGameStart})=>{
                 <CircularProgress />
                 current player: ({player_cnt}/2)
             </Box></Col>
-            <Col offset={10}><Button style={{display:!clickedWait? 'block':'none' }} className = "button" type="primary"  shape="round" size = {'large'} onClick = {wait}>進入等待</Button>
+            <Col offset={10}><Button style={{display:!clickedWait? 'block':'none' }} className = "button" type="primary"  shape="round" size = {'large'} onClick = {jumpToGamePage}>進入等待</Button>
             </Col>
             <Col offset={10}><Button className = "button" type="primary"  shape="round" size = {'large'} onClick = {previous}>回到主選單</Button>
             </Col>

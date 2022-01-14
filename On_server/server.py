@@ -364,7 +364,7 @@ async def init_connection(ws):
     global connected_clients
     print("new register",len(connected_clients))
 
-    init_data = {"Map":"Welcome","player_id":len(connected_clients)}
+    init_data = {"Map":"Welcome","player_id":len(connected_clients), "cur_player_cnt":len(connected_clients)+1}
     await ws.send(f"{init_data}".replace("'",'"',100))
     print("sent",init_data)
 

@@ -21,13 +21,6 @@ function connect(){
             connect();
         }, 1000);
     }
-    
-    //接收 Server 發送的訊息
-
-}
-connect()
-
-const setOnMessage = () => {
     ws.onmessage = event => {
         let {data} = event
         let msg = JSON.parse(data)
@@ -49,6 +42,13 @@ const setOnMessage = () => {
         // console.log(typeof(msg))
         // console.log(data)
     }
+    
+    //接收 Server 發送的訊息
+
+}
+connect()
+
+const setOnMessage = () => {
 }
 
 const sendData = async (data) => {
