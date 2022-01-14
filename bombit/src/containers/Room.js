@@ -4,7 +4,7 @@ import { Row, Col } from 'antd';
 import 'antd/dist/antd.css';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import {sendData, getGameState, getInitState, getHasEnd, getScores } from "./Client";
+import {sendData, getGameState, getInitState, getHasEnd, getScores, get } from "./Client";
 const Room = ({room, setPage, setRoom, setGameStart})=>{
     const [Wait ,setWait] = useState(false)
     const previous = ()=>{
@@ -18,7 +18,6 @@ const Room = ({room, setPage, setRoom, setGameStart})=>{
     }
     const wait = ()=>{
         setWait(true);
-
         // setWait(false);
     }
     return(

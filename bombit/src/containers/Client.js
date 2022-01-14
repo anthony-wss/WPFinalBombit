@@ -1,13 +1,14 @@
-var ws = new WebSocket('ws://linux7.csie.ntu.edu.tw:1928')
+var ws = new WebSocket('ws://linux7.csie.ntu.edu.tw:1922')
 var gameState = 0
 var initState = 0
 var hasinit = false
+var player_cnt = 0
 var hasend = false
 var players_score = [0, 0, 0, 0]
 
 function connect(){
     //使用 WebSocket 的網址向 Server 開啟連結
-    ws = new WebSocket('ws://linux7.csie.ntu.edu.tw:1928')
+    ws = new WebSocket('ws://linux7.csie.ntu.edu.tw:1922')
 
     //開啟後執行的動作，指定一個 function 會在連結 WebSocket 後執行
     ws.onopen = () => {
@@ -66,4 +67,8 @@ const getScores = () => {
     return players_score
 }
 
-export {sendData, getGameState, getInitState, getHasEnd, getScores}
+const getPlayerCnt = () => {
+    return player_cnt
+}
+
+export {sendData, getGameState, getInitState, getHasEnd, getScores, getPlayerCnt}
