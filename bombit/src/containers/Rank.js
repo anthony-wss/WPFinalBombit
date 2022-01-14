@@ -48,7 +48,7 @@ const Rank = ({rank, setRank, setPage, queryRank, setQueryRank})=>{
             />
           </List.Item>
         )}
-      />,
+      />
         <div style={{display:rank? 'block':'none' }}>
             
         <Button className = "button" type="primary"  shape="round" size = {'large'} onClick = {previous}>

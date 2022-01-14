@@ -11,13 +11,14 @@ import SaveIcon from '@mui/icons-material/Save';
 import SendIcon from '@mui/icons-material/Send';
 import axios from "../api"
 import {sendData, getGameState, getInitState, getHasEnd, getScores } from "./Client";
-const GameOver = ({setPage,score})=>{
+const GameOver = ({setPage})=>{
     const [name, setName] = useState('');
     const HomePage = ()=>{
         setPage(1)
     }
+    const scoreArray = getScores();
+    const score = scoreArray[0];
     const saveData = async () => {
-        const score =70;
         console.log(score);
         const {
           data: { message, Person },
@@ -29,22 +30,24 @@ const GameOver = ({setPage,score})=>{
         console.log(Person);
     }
     return(
-        <div>
+        <div style = {{fontSize:50}}>
+            請輸入你的名字： 
 {/* This is the page for game over.<br></br><br></br> */}
         <input type="text" onChange={(e)=>setName(e.target.value)} />
+        <div style = {{fontSize:50}}>{`你的成績: ${score}`}</div>
         <LoadingButton
         color="secondary"
         onClick={saveData}
         loadingPosition="start"
         startIcon={<SaveIcon />}
         variant="contained"
-        size = "small"
+        size = "large"
       >
         Save
       </LoadingButton>
-        <Col offset={10}><Button className = "button" type="primary"  shape="round" size = {'large'} onClick = {HomePage} Row = {5}>
+        <Button className = "button" type="primary"  shape="round" size = {'large'} onClick = {HomePage} Row = {5}>
             Back To Home Page
-        </Button></Col>
+        </Button>
         </div>
     )
 }
