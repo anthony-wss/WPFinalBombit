@@ -11,6 +11,7 @@
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^12.0.0",
     "@testing-library/user-event": "^13.2.1",
+    "@types/react-beforeunload": "^2.1.1",
     "antd": "^4.18.3",
     "axios": "^0.24.0",
     "pixi.js": "^6.2.1",

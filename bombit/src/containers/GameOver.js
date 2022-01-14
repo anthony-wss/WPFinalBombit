@@ -30,12 +30,10 @@ const GameOver = ({setPage})=>{
         console.log(Person);
     }
     return(
-        <div style = {{fontSize:50}}>
-            請輸入你的名字： 
-{/* This is the page for game over.<br></br><br></br> */}
-        <input type="text" onChange={(e)=>setName(e.target.value)} />
-        <div style = {{fontSize:50}}>{`你的成績: ${score}`}</div>
-        <LoadingButton
+        <div style = {{fontSize:40}}>
+            <Row justify="center">
+        <input type="text" placeholder="請輸入你的名字" onChange={(e)=>setName(e.target.value) } />
+         <LoadingButton
         color="secondary"
         onClick={saveData}
         loadingPosition="start"
@@ -44,10 +42,14 @@ const GameOver = ({setPage})=>{
         size = "large"
       >
         Save
-      </LoadingButton>
-        <Button className = "button" type="primary"  shape="round" size = {'large'} onClick = {HomePage} Row = {5}>
-            Back To Home Page
-        </Button>
+      </LoadingButton>       
+        </Row>
+        <Row justify="center"><div style = {{fontSize:50}}>{`你的成績: ${score}`}</div>
+        </Row>    
+
+        <Row justify="center"><Button className = "button" type="primary"  shape="round" size = {'large'} onClick = {HomePage} Row = {5}>
+            回到主選單
+        </Button></Row>
         </div>
     )
 }

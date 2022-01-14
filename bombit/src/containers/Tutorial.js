@@ -9,8 +9,8 @@ const Tutorial = ({tutorial, setTutorial, setPage})=>{
     return(
         <div style={{display:tutorial? 'block':'none' }}>
             This page is for Tutorial.
-            <Col offset={10}><Button className = "button" type="primary"  shape="round" size = {'large'} onClick = {previous}>回到主選單</Button>
-            </Col>
+            <Row justify="center"><Button className = "button" type="primary"  shape="round" size = {'large'} onClick = {previous}>回到主選單</Button>
+            </Row>
         </div>
     )
 }

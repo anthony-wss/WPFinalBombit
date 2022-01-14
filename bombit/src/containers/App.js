@@ -54,18 +54,18 @@ const App = ()=>{
             return(
                 <>
             <div className="layout">
-                <Col offset={10}><Button className = "button" type="primary"  shape="round" size = {'large'} onClick = {jumpToRoomPage}>
+            <Row justify="center"><Button className = "button" type="primary"  shape="round" size = {'large'} onClick = {jumpToRoomPage}>
                     進入大廳
-                </Button></Col>
-                <Col offset={10}><Button className = "button" type="primary" shape="round" size={'large'} onClick = {jumpToTutorialPage} >
+                </Button></Row>
+                <Row justify="center"><Button className = "button" type="primary" shape="round" size={'large'} onClick = {jumpToTutorialPage} >
                     遊戲方法
-                </Button></Col>
-                <Col offset={10}><Button className = "button" type="primary" shape="round" size={'large'} onClick = {jumpToRankPage} >
+                </Button></Row>
+                <Row justify="center"><Button className = "button" type="primary" shape="round" size={'large'} onClick = {jumpToRankPage} >
                     排行榜
-                </Button></Col>
-                <Col offset={10}><Button className = "button" type="primary" shape="round" size={'large'} onClick = {jumpToCreditPage} >
+                </Button></Row>
+                <Row justify="center"><Button className = "button" type="primary" shape="round" size={'large'} onClick = {jumpToCreditPage} >
                     製作人員
-                </Button></Col>        
+                </Button></Row>        
                 <Button className = "button" type="primary"  shape="round" size = {'large'} onClick = {gotoGameOver}>
                     Go to Gameover
                 </Button>
