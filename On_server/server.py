@@ -4,6 +4,7 @@ import websockets
 import time
 from math import floor
 from random import randint
+import copy
 # receive : json.loads(message)
 # 收到一個dict物件 {player_id:Int,key:String}
 # 會呼叫 player_control(D) 傳入上述物件
@@ -17,7 +18,7 @@ UNIT, POWER = 37, 7
 HEIGHT, WIDTH = 15, 17
 counter = 0
 sent = False
-
+bot_list = []
 MAP = [
     # 0: 空氣, 1: 不可炸障礙物, 2: 炸彈, 3: 火焰, 4: 可以炸掉的東西
     [
@@ -311,8 +312,9 @@ async def handler(websocket, path):
             listener_task = asyncio.ensure_future(websocket.recv())
             producer_task = asyncio.ensure_future(getGameState())
             refresh_task = asyncio.ensure_future(update())
+            bot_task = asyncio.ensure_future(bot_handle())
             done, pending = await asyncio.wait(
-                [listener_task, producer_task,refresh_task],
+                [listener_task, producer_task,refresh_task,bot_task],
                 return_when=asyncio.FIRST_COMPLETED)
 
             if listener_task in done:
@@ -338,7 +340,175 @@ async def handler(websocket, path):
         print("lose a client")
         connected_clients.remove(websocket)
 
+def bot_detect_bomb(): # 回傳炸彈可能會炸的地方 標上-1
+    bomb_map = copy.deepcopy(MAP)
+    for i in range(15):
+        for j in range(17):
+            if(bomb_map[i][j]==2):
+                for k in range(3):
+                    if(bomb_map[i][(j+k)%17] == 0):
+                        bomb_map[i][(j+k)%17] = -1
+                    elif(bomb_map[i][(j+k)%17] == 1):
+                        break
+                    elif(bomb_map[i][(j+k)%17] == 4):
+                        bomb_map[i][(j+k)%17] = -1
+                        break
+                for k in range(3):
+                    if(bomb_map[(i+k)%15][j] == 0):
+                        bomb_map[(i+k)%15][j] = -1
+                    elif(bomb_map[(i+k)%15][j] == 1):
+                        break
+                    elif(bomb_map[(i+k)%15][j] == 4):
+                        bomb_map[(i+k)%15][j] = -1
+                        break
+                for k in range(3):
+                    if(bomb_map[i][abs(j-k)] == 0):
+                        bomb_map[i][abs(j-k)] = -1
+                    elif(bomb_map[i][abs(j-k)] == 1):
+                        break
+                    elif(bomb_map[i][abs(j-k)] == 4):
+                        bomb_map[i][abs(j-k)] = -1
+                        break
+                for k in range(3):
+                    if(bomb_map[abs(i-k)][j] == 0):
+                        bomb_map[abs(i-k)][j] = -1
+                    elif(bomb_map[abs(i-k)][j] == 1):
+                        break
+                    elif(bomb_map[abs(i+k)][j] == 4):
+                        bomb_map[abs(i+k)][j] = -1
+                        break
+    return bomb_map
+def bot_escape(idx_x,idx_y,find_map):
+    to_traverse = [[idx_x,idx_y]]
+    while(to_traverse):
+        t_x = to_traverse[0][0]
+        t_y = to_traverse[0][1]
+        to_traverse = to_traverse[1:]
+        added = False
+        if(t_x>0):
+            if(find_map[t_y][t_x-1] == 0 or find_map[t_y][t_x-1] == -1):
+                to_traverse.append([t_x-1,t_y])
+                added = True
+        if(t_x<17):
+            if(find_map[t_y][t_x+1] == 0 or find_map[t_y][t_x+1] == -1):
+                to_traverse.append([t_x+1,t_y])
+                added = True
+        if(t_y<15):
+            if(find_map[t_y+1][t_x] == 0 or find_map[t_y+1][t_x] == -1):
+                to_traverse.append([t_x,t_y+1])
+                added = True
+        if(t_y > 0):
+            if(find_map[t_y-1][t_x] == 0 or find_map[t_y-1][t_x] == -1):
+                to_traverse.append([t_x,t_y-1])
+                added = True
+        if not added:
+            if(find_map[t_x][t_y] != -1):
+                return [t_x ,t_y]
+    return [-1,-1]
 
+def bot_find_destroyable(idx_x,idx_y):
+    find_map = copy.deepcopy(MAP)
+    to_traverse = [[idx_x,idx_y]]
+    while(to_traverse):
+        t_x = to_traverse[0][0]
+        t_y = to_traverse[0][1]
+        to_traverse = to_traverse[1:]
+        added = False
+        if(t_x>0):
+            if(find_map[t_y][t_x-1] == 0):
+                to_traverse.append([t_x-1,t_y])
+                added = True
+        if(t_x<17):
+            if(find_map[t_y][t_x+1] == 0):
+                to_traverse.append([t_x+1,t_y])
+                added = True
+        if(t_y<15):
+            if(find_map[t_y+1][t_x] == 0):
+                to_traverse.append([t_x,t_y+1])
+                added = True
+        if(t_y > 0):
+            if(find_map[t_y-1][t_x] == 0):
+                to_traverse.append([t_x,t_y-1])
+                added = True
+        if not added:
+            if(t_x>0):
+                if(find_map[t_y][t_x-1] == 4):
+                    return [t_x,t_y]
+            if(t_x<17):
+                if(find_map[t_y][t_x+1] == 4):
+                    return [t_x,t_y]
+            if(t_y<15):
+                if(find_map[t_y+1][t_x] == 4):
+                    return [t_x,t_y]
+            if(t_y > 0):
+                if(find_map[t_y-1][t_x] == 4):
+                    return [t_x,t_y]
+
+    return [-1,-1]
+
+
+def bot_move_to(target,pid,idx_x,idx_y):
+    pass
+def bot_roamer(idx_x,idx_y):
+    find_map = copy.deepcopy(MAP)
+    to_traverse = [[idx_x,idx_y]]
+    while(to_traverse):
+        t_x = to_traverse[0][0]
+        t_y = to_traverse[0][1]
+        to_traverse = to_traverse[1:]
+        added = False
+        if(t_x>0):
+            if(find_map[t_y][t_x-1] == 0):
+                to_traverse.append([t_x-1,t_y])
+                added = True
+        if(t_x<17):
+            if(find_map[t_y][t_x+1] == 0):
+                to_traverse.append([t_x+1,t_y])
+                added = True
+        if(t_y<15):
+            if(find_map[t_y+1][t_x] == 0):
+                to_traverse.append([t_x,t_y+1])
+                added = True
+        if(t_y > 0):
+            if(find_map[t_y-1][t_x] == 0):
+                to_traverse.append([t_x,t_y-1])
+                added = True
+        if not added:
+            return [t_x,t_y]
+    
+def bot_think(player_id):
+    if player_id == -1:
+        return
+    pos_x = game.players[player_id].x
+    pos_y = game.players[player_id].y
+    idx_x = idx(pos_x)
+    idx_y = idx(pos_y)
+    # pos to grid
+    bomb_map = bot_detect_bomb()
+    target = [] # 要去的下個idx_x/y
+    place_bomb = False
+    if(bomb_map[idx_y][idx_x] == 2):
+        target = bot_escape(idx_x,idx_y,bomb_map)
+    else:
+        target = bot_find_destroyable(idx_x,idx_y)
+        if target[0] == -1:
+            target = bot_roamer(idx_x,idx_y)
+        else:
+            place_bomb = True
+    bot_move_to(target,player_id,idx_x,idx_y)
+    if(place_bomb):
+        player_control({})
+        target = bot_escape(idx_x,idx_y,bomb_map)
+        bot_move_to(target,player_id,idx_x,idx_y)
+    # 若在炸彈範圍 躲避
+    # 若無 找下一個附近有可炸物的地方 放炸彈
+        #若無可炸物 到處走
+
+
+def bot_handle():
+    for i in bot_list:
+        bot_think(i)
+    return 
 
 # time.sleep(2)
 if __name__ == "__main__":
