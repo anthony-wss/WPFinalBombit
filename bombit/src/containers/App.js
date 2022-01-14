@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Room from './Room'
+import {Room} from './Room'
 import Rank from './Rank'
 import Tutorial from './Tutorial'
 import GameOver from './GameOver'
 import Credit from './Credit'
-import Game from './Game'
+import {Game} from './Game'
 import { Button } from 'antd';
 import { Row, Col } from 'antd';
 import 'antd/dist/antd.css';

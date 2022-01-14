@@ -14,7 +14,8 @@ import trunk_img from '../img/trunk.PNG';
 import bomb_up_img from '../img/bomb_up.PNG';
 import power_up_img from '../img/power_up.PNG';
 import speed_up_img from '../img/speed_up.PNG';
-import {sendData, getGameState, getInitState, getHasEnd, getScores, getPlayerCnt } from "./Client";
+import {sendData, getGameState, getInitState, getHasEnd, getScores, getPlayerCnt, setOnMessage} from "./Client";
+import {Room, getIsWaiting} from "./Room"
 // sendData({player_id:1,key:" "}) 
 // player_id : int(由伺服器連線時分配) key : String (WASD => 上左下右,P=>空白鍵放炸彈)
 //
@@ -36,6 +37,7 @@ function idx(x) {
 
 const UNIT = 37, WIDTH = 17, HEIGHT = 15;
 var id = 0;
+var player_id = 0;
 
 class Game extends React.Component {
   constructor(props) {
@@ -132,6 +134,7 @@ class Game extends React.Component {
     let gs = getInitState()
     sendData({'msg': `I'm player ${gs.player_id}`})
     console.log(`I'm player ${gs.player_id}`)
+    player_id = gs.player_id
 
     if (gs.player_id === 0)
       this.player_texture = resource.chara_1_img.texture
@@ -170,6 +173,7 @@ class Game extends React.Component {
 
   tickerLoop = async (main_ticker) => {
     // console.log(this.app.stage)
+
     // 清空stage
     while(this.app.stage.children[0]) {
       this.app.stage.removeChild(this.app.stage.children[0])
@@ -309,4 +313,9 @@ class Game extends React.Component {
     )
   }
 }
-export default Game;
+
+const getPlayerId = () => {
+  return player_id;
+}
+
+export {Game, getPlayerId};

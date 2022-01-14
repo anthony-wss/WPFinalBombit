@@ -4,10 +4,23 @@ import { Row, Col } from 'antd';
 import 'antd/dist/antd.css';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import {sendData, getGameState, getInitState, getHasEnd, getScores } from "./Client";
+import {connect, sendData, getGameState, getInitState, getHasEnd, getScores, getPlayerCnt, setOnMessage} from "./Client";
 // import { useBeforeunload } from 'react-beforeunload';
+
+var isWaiting = false
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+const getIsWaiting = () => {
+    return isWaiting
+}
+
 const Room = ({room, setPage, setRoom, setGameStart})=>{
     const [Wait ,setWait] = useState(false)
+    const [clickedWait, setClickedWait] = useState(false)
+    const [playerCnt, setPlayerCnt] = useState(0)
     var waitPeople = 2;
     const previous = ()=>{
         setPage(1);
@@ -20,7 +33,8 @@ const Room = ({room, setPage, setRoom, setGameStart})=>{
     }
     const wait = async ()=>{
         setClickedWait(true)
-        setOnMessage()
+        await connect()
+        isWaiting = true
         var player_cnt = getPlayerCnt()
         while (player_cnt !== 2) {
             setPlayerCnt(player_cnt);
@@ -35,17 +49,17 @@ const Room = ({room, setPage, setRoom, setGameStart})=>{
         <div style={{display:room? 'block':'none'}}>
             <div>
                 <Row justify="center">
-                    <Box style={{display:Wait? 'block':'none'}} >
+                    <Box style={{display:clickedWait? 'block':'none'}} >
                         <CircularProgress />
                     </Box>
                 </Row>
                 <Row justify="center">
-                    <Button style={{display:!Wait? 'block':'none' }} className = "button" type="primary"  shape="round" size = {'large'} onClick = {wait}>
+                    <Button style={{display:!clickedWait? 'block':'none' }} className = "button" type="primary"  shape="round" size = {'large'} onClick = {wait}>
                         進入等待
                     </Button>
                 </Row>
                 <Row justify="center" >
-                    <div style={{display:Wait? 'block':'none'}}>
+                    <div style={{display:clickedWait? 'block':'none'}}>
                         目前等待人數 : {waitPeople}
                     </div>
                 </Row>
@@ -58,4 +72,4 @@ const Room = ({room, setPage, setRoom, setGameStart})=>{
         </div>
     )
 }
-export default Room
+export {Room, getIsWaiting}
