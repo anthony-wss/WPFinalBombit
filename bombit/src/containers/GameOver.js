@@ -10,14 +10,15 @@ import Switch from '@mui/material/Switch';
 import SaveIcon from '@mui/icons-material/Save';
 import SendIcon from '@mui/icons-material/Send';
 import axios from "../api"
-import {sendData, getGameState, getInitState, getHasEnd, getScores } from "./Client";
+import {sendData, getGameState, getInitState, getHasEnd, getScores, getPlayerCnt } from "./Client";
+import { getPlayerId } from './Game';
 const GameOver = ({setPage})=>{
     const [name, setName] = useState('');
     const HomePage = ()=>{
         setPage(1)
     }
     const scoreArray = getScores();
-    const score = scoreArray[0];
+    const score = scoreArray[getPlayerId()];
     const saveData = async () => {
         console.log(score);
         const {

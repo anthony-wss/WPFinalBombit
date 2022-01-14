@@ -91,19 +91,19 @@ class Game extends React.Component {
   keyDown_handler = (key) => {
     switch(key) {
       case "ArrowUp":
-        sendData({player_id:id,key:"Dw"});
+        sendData({player_id:id,key:"Dw", msg:""});
         break;
       case "ArrowDown":
-        sendData({player_id:id,key:"Ds"});
+        sendData({player_id:id,key:"Ds", msg:""});
         break;
       case "ArrowLeft":
-        sendData({player_id:id,key:"Da"});
+        sendData({player_id:id,key:"Da", msg:""});
         break;
       case "ArrowRight":
-        sendData({player_id:id,key:"Dd"});
+        sendData({player_id:id,key:"Dd", msg:""});
         break;
       case " ":
-        sendData({player_id:id,key:"P"});
+        sendData({player_id:id,key:"P", msg:""});
         break;
       default:
         break;
@@ -113,16 +113,16 @@ class Game extends React.Component {
   keyUp_handler = (key) => {
     switch(key) {
       case "ArrowUp":
-        sendData({player_id:id,key:"Uw"});
+        sendData({player_id:id,key:"Uw", msg:""});
         break;
       case "ArrowDown":
-        sendData({player_id:id,key:"Us"});
+        sendData({player_id:id,key:"Us", msg:""});
         break;
       case "ArrowLeft":
-        sendData({player_id:id,key:"Ua"});
+        sendData({player_id:id,key:"Ua", msg:""});
         break;
       case "ArrowRight":
-        sendData({player_id:id,key:"Ud"});
+        sendData({player_id:id,key:"Ud", msg:""});
         break;
       default:
         break;
@@ -132,18 +132,12 @@ class Game extends React.Component {
   initialize = async (resource) => {
     // 從server接收玩家id
     let gs = getInitState()
-    sendData({'msg': `I'm player ${gs.player_id}`})
-    console.log(`I'm player ${gs.player_id}`)
-    player_id = gs.player_id
+    id = gs.player_id
 
-    if (gs.player_id === 0)
-      this.player_texture = resource.chara_1_img.texture
-    else if (gs.player_id === 1)
-      this.player_texture = resource.chara_2_img.texture
-    else if (gs.player_id === 2)
-      this.player_texture = resource.chara_3_img.texture
-    else if (gs.player_id === 3)
-      this.player_texture = resource.chara_4_img.texture
+    this.player_1_texture = resource.chara_1_img.texture
+    this.player_2_texture = resource.chara_2_img.texture
+    this.player_3_texture = resource.chara_3_img.texture
+    this.player_4_texture = resource.chara_4_img.texture
 
     this.bomb_texture   = resource.bomb_img.texture
     this.fire_texture   = resource.fire_img.texture
@@ -194,10 +188,30 @@ class Game extends React.Component {
     }
 
     for(let i = 0; i < gs.player_pos.length; i++) {
-      let player_sprite = new PIXI.Sprite(this.player_texture);
-      player_sprite.x = gs.player_pos[i][0];
-      player_sprite.y = gs.player_pos[i][1];
-      this.app.stage.addChild(player_sprite);
+      if (i == 0) {
+        let player_sprite = new PIXI.Sprite(this.player_1_texture);
+        player_sprite.x = gs.player_pos[i][0];
+        player_sprite.y = gs.player_pos[i][1];
+        this.app.stage.addChild(player_sprite);
+      }
+      else if (i == 1) {
+        let player_sprite = new PIXI.Sprite(this.player_2_texture);
+        player_sprite.x = gs.player_pos[i][0];
+        player_sprite.y = gs.player_pos[i][1];
+        this.app.stage.addChild(player_sprite);
+      }
+      else if (i == 2) {
+        let player_sprite = new PIXI.Sprite(this.player_3_texture);
+        player_sprite.x = gs.player_pos[i][0];
+        player_sprite.y = gs.player_pos[i][1];
+        this.app.stage.addChild(player_sprite);
+      }
+      else if (i == 3) {
+        let player_sprite = new PIXI.Sprite(this.player_4_texture);
+        player_sprite.x = gs.player_pos[i][0];
+        player_sprite.y = gs.player_pos[i][1];
+        this.app.stage.addChild(player_sprite);
+      }
     }
 
     // Debug用
@@ -315,7 +329,7 @@ class Game extends React.Component {
 }
 
 const getPlayerId = () => {
-  return player_id;
+  return id;
 }
 
 export {Game, getPlayerId};

@@ -36,7 +36,7 @@ const Room = ({room, setPage, setRoom, setGameStart})=>{
         await connect()
         isWaiting = true
         var player_cnt = getPlayerCnt()
-        while (player_cnt !== 2) {
+        while (player_cnt < waitPeople) {
             setPlayerCnt(player_cnt);
             await sleep(1000)
             player_cnt = getPlayerCnt()
@@ -60,7 +60,7 @@ const Room = ({room, setPage, setRoom, setGameStart})=>{
                 </Row>
                 <Row justify="center" >
                     <div style={{display:clickedWait? 'block':'none'}}>
-                        目前等待人數 : {waitPeople}
+                        完成連線人數 : {getPlayerCnt()}/{waitPeople}
                     </div>
                 </Row>
                 <Row justify="center">

@@ -15,18 +15,37 @@ from item import *
 
 t = 0
 item_time = 4
+timeout_time = 1
 UNIT, POWER = 37, 1
 HEIGHT, WIDTH = 15, 17
-counter = 0
 sentGameover = False
 ITEMNUM = 3
 GENITEM = 0.5
+player_survive = 2
 
 class Score():
     def __init__(self):
         self.destroy = 100
         self.getItem = 200
         self.getKill = 1000
+
+fire_owner = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+]
 
 MAP = [
     # 0: 空氣, 1: 不可炸障礙物, 2: 炸彈, 3: 火焰, 4: 可以炸掉的東西
@@ -96,11 +115,14 @@ class Game():
         self.players.append(Player())
         print("addPlayer: pid =", pid)
         if pid == 0:
-            self.players[-1].x = 4*UNIT
-            self.players[-1].y = 4*UNIT
+            self.players[0].x = 4*UNIT
+            self.players[0].y = 4*UNIT
+        elif pid == 1:
+            self.players[1].x = 12*UNIT
+            self.players[1].y = 4*UNIT
         else:
-            self.players[-1].x = 1*UNIT
-            self.players[-1].y = 1*UNIT
+            self.players[pid].x = 1*UNIT
+            self.players[pid].y = 1*UNIT
 
     def genItemAt(self, y, x):
         if random() < GENITEM:
@@ -202,12 +224,17 @@ async def update():
     每1/60秒call一次的function
     """
     # while 1:
-    global t, item_time
+    global t, item_time, player_survive
     time.sleep(0.01)
     t += 0.01
 
+    if player_survive == 1:
+        print("End Game")
+
     # 維護每個玩家
     for p in game.players:
+        if p.x > 5000:
+            continue
         dir = -1
         if p.is_moving[4]:
             if p.is_moving[0]:
@@ -222,13 +249,21 @@ async def update():
         valid_position(p, dir)
         # print(p.x, p.y)
 
+        if game.Map.obj[idx(p.y)][idx(p.x)] == 3:
+            print(f"player dies")
+            if fire_owner[idx(p.y)][idx(p.x)] != game.players.index(p):
+                game.players[fire_owner[idx(p.y)][idx(p.x)]].score += SCORE.getKill
+            p.x = 9999
+            p.y = 9999
+            player_survive -= 1
+            # game.players.remove(p)
+
     # 維護每個炸彈
     for b in game.bombs:
         # 檢查每顆炸彈的時限
         if t > b.explode_time and not b.set_fire:
             b.set_fire = True
             print('Boom!')
-            # await boardcast_status({"Map": "End", "players_score": [t*1000, 0, 0, 0]})
             bomb_x, bomb_y = idx(b.x), idx(b.y)
             game.Map.obj[bomb_y][bomb_x] = 3
             dir_blocked = [0, 0, 0, 0]
@@ -242,11 +277,13 @@ async def update():
                         if game.Map.obj[bomb_y-j][bomb_x] == 4:
                             dir_blocked[0] = 1
                             game.Map.obj[bomb_y-j][bomb_x] = 3
+                            fire_owner[bomb_y-j][bomb_x] = b.owner
                             game.genItemAt(bomb_y-j, bomb_x)
                             b.fires.append((bomb_y-j, bomb_x))
                             p.score += SCORE.destroy
                         else:
                             game.Map.obj[bomb_y-j][bomb_x] = 3
+                            fire_owner[bomb_y-j][bomb_x] = b.owner
                             b.fires.append((bomb_y-j, bomb_x))
                     else:
                         dir_blocked[0] = 1
@@ -256,11 +293,13 @@ async def update():
                         if game.Map.obj[bomb_y+j][bomb_x] == 4:
                             dir_blocked[1] = 1
                             game.Map.obj[bomb_y+j][bomb_x] = 3
+                            fire_owner[bomb_y+j][bomb_x] = b.owner
                             game.genItemAt(bomb_y+j, bomb_x)
                             b.fires.append((bomb_y+j, bomb_x))
                             p.score += SCORE.destroy
                         else:
                             game.Map.obj[bomb_y+j][bomb_x] = 3
+                            fire_owner[bomb_y+j][bomb_x] = b.owner
                             b.fires.append((bomb_y+j, bomb_x))
                     else:
                         dir_blocked[1] = 1
@@ -270,11 +309,13 @@ async def update():
                         if game.Map.obj[bomb_y][bomb_x-j] == 4:
                             dir_blocked[2] = 1
                             game.Map.obj[bomb_y][bomb_x-j] = 3
+                            fire_owner[bomb_y][bomb_x-j] = b.owner
                             game.genItemAt(bomb_y, bomb_x-j)
                             b.fires.append((bomb_y, bomb_x-j))
                             p.score += SCORE.destroy
                         else:
                             game.Map.obj[bomb_y][bomb_x-j] = 3
+                            fire_owner[bomb_y][bomb_x-j] = b.owner
                             b.fires.append((bomb_y, bomb_x-j))
                     else:
                         dir_blocked[2] = 1
@@ -284,11 +325,13 @@ async def update():
                         if game.Map.obj[bomb_y][bomb_x+j] == 4:
                             dir_blocked[3] = 1
                             game.Map.obj[bomb_y][bomb_x+j] = 3
+                            fire_owner[bomb_y][bomb_x+j] = b.owner
                             game.genItemAt(bomb_y, bomb_x+j)
                             b.fires.append((bomb_y, bomb_x+j))
                             p.score += SCORE.destroy
                         else:
                             game.Map.obj[bomb_y][bomb_x+j] = 3
+                            fire_owner[bomb_y][bomb_x+j] = b.owner
                             b.fires.append((bomb_y, bomb_x+j))
                     else:
                         dir_blocked[3] = 1
@@ -296,7 +339,9 @@ async def update():
         if t > b.fire_time:
             for pos in b.fires:
                 game.Map.obj[pos[0]][pos[1]] = 0
+                fire_owner[pos[0]][pos[1]] = 0
             game.Map.obj[idx(b.y)][idx(b.x)] = 0
+            fire_owner[idx(b.y)][idx(b.x)] = 0
             game.bombs.remove(b)
 
     # 每隔一段時間生成道具
@@ -347,8 +392,7 @@ class Client:
         self.status = "Inited"  # Inited,Waiting,Gaming
         self.ws = WS
 
-connected_clients = set()
-i = {"counter":1}
+connected_clients = []
 # server_socket = None # 要等websockets.server跑過
 # def player_control(D):
 #     pass
@@ -362,6 +406,7 @@ async def boardcast_status(D):
     
 async def init_connection(ws):
     global connected_clients
+    
     print("new register",len(connected_clients))
 
     init_data = {"Map":"Welcome","player_id":len(connected_clients)}
@@ -370,12 +415,11 @@ async def init_connection(ws):
 
     message = await ws.recv()
     print(message)
-    global counter
-    connected_clients.add(ws)
-    game.addPlayer(len(connected_clients)-1)
-    counter+=1
+    connected_clients.append(ws)
+    pid = len(connected_clients)-1
+    game.addPlayer(pid)
     print("finished initialization")
-    return
+    return pid
     
     # data = json.loads(message)
     # print(data)/
@@ -385,14 +429,19 @@ async def init_connection(ws):
 
 async def handler(websocket, path):
     # Register & init
-    await init_connection(websocket)
+    global connected_clients, timeout_time, player_survive
+    pid = await init_connection(websocket)
+    timeout = 0
+
     # print(game.players)
     # print("lose a client")
     # connected_clients.remove(websocket)
     # return 
     try:
         while True:
+            # time.sleep(0.5)
             listener_task = asyncio.ensure_future(websocket.recv())
+            # if len(connected_clients) == 4:
             producer_task = asyncio.ensure_future(getGameState())
             refresh_task = asyncio.ensure_future(update())
             done, pending = await asyncio.wait(
@@ -401,10 +450,11 @@ async def handler(websocket, path):
 
             if listener_task in done:
                 message = listener_task.result()
-                # print("from client",message)
                 data = json.loads(message)
-                # print(type(data))
-                await player_control(data)
+                if data['msg'] == "ping":
+                    timeout = 0
+                else:
+                    await player_control(data)
                 # await consumer(message)
             else:
                 listener_task.cancel()
@@ -412,12 +462,28 @@ async def handler(websocket, path):
             if producer_task in done:
                 message = producer_task.result()
                 # print("send",message['player_pos'])
-                await asyncio.wait([ws.send(f"{message}".replace("'",'"',100)) for ws in connected_clients])
+                await asyncio.wait([websocket.send(f"{message}".replace("'",'"',100))])
             else:
                 producer_task.cancel()
 
-            if sentGameover:
+            if timeout_time < t:
+                timeout_time += 1
+                message = {"Map": "ping", "player_cnt": len(connected_clients)}
+                await asyncio.wait([websocket.send(f"{message}".replace("'",'"',100))])
+                timeout += 1
+
+            # print(f"player {pid}: timeout={timeout}")
+
+            if timeout > 3:
+                break
+
+            if player_survive == 1:
+                await boardcast_status({"Map": "End", "players_score": [game.players[i].score for i in range(len(game.players))]})
                 exit()
+                break
+            
+    except websockets.exceptions.ConnectionClosedError:
+        print(f"lose client: {pid}")
     finally:
         print("lose a client")
         connected_clients.remove(websocket)

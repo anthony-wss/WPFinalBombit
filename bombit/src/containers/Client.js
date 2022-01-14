@@ -31,7 +31,8 @@ function connect(){
         // console.log(msg)
         if (msg.Map === "Welcome") {
             initState = msg
-            player_cnt = msg.cur_player_cnt
+            sendData({'msg': `I'm player ${initState.player_id}`})
+            console.log(`I'm player ${initState.player_id}`)
         }
         if (msg.Map === "End") {
             console.log(msg.players_score)
@@ -39,7 +40,9 @@ function connect(){
             players_score = msg.players_score
         }
         if (msg.Map === "ping") {
-            ws.send(JSON.stringify({'msg':"ping", "sender": `${getPlayerId()}`}))
+            sendData({'msg':"ping", "sender": `${getPlayerId()}`})
+            player_cnt = msg.player_cnt
+            // console.log(`current player count: ${player_cnt}`)
         }
         else
             gameState = msg
