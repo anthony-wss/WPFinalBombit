@@ -29,6 +29,7 @@ const GameOver = ({setPage})=>{
         });
         console.log(message);
         console.log(Person);
+        HomePage();
     }
     return(
         <div style = {{fontSize:40}}>
