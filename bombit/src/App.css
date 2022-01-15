@@ -8,3 +8,11 @@
   justify-content: center;
   align-items: center; 
 }
+.layout {
+  width: 100%;
+  height: auto;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-position:center center;
+  
+}

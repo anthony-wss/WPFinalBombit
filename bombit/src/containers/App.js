@@ -7,11 +7,29 @@ import Tutorial from './Tutorial'
 import GameOver from './GameOver'
 import Credit from './Credit'
 import {Game} from './Game'
-import { Button } from 'antd';
+import { Affix } from 'antd';
 import { Row, Col } from 'antd';
 import 'antd/dist/antd.css';
+import background from '../img/background.png';
+import Button from "@mui/material/Button";
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { purple, orange } from '@mui/material/colors';
+
 import '../App.css'
+
 const App = ()=>{
+    const theme = createTheme({
+        palette: {
+          primary: {
+            // Purple and green play nicely together.
+            main: '#ef6c00',
+          },
+          secondary: {
+            // This is green.A700 as hex.
+            main: '#11cb5f',
+          },
+        },
+      });
     /*
     page=1:homepage
     page=2:room、tutorial、credit、rank
@@ -52,25 +70,37 @@ const App = ()=>{
         if (page===1) 
         {
             return(
-                <>
-            <div className="layout">
-            <Row justify="center"><Button className = "button" type="primary"  shape="round" size = {'large'} onClick = {jumpToRoomPage}>
+                <ThemeProvider theme={theme}>
+                <Row justify="center">
+            <div className="layout" 
+                style = {{
+                    height:"600px",
+                    width:"1370px", 
+                    backgroundImage: `url(${background})`
+                }}
+            >
+                <Row></Row>
+                <Affix offsetTop={355}><Col offset={16}><Button className = "button" variant="contained" color="primary" onClick = {jumpToRoomPage}> 
                     進入大廳
-                </Button></Row>
-                <Row justify="center"><Button className = "button" type="primary" shape="round" size={'large'} onClick = {jumpToTutorialPage} >
+                </Button></Col></Affix>
+                <Affix offsetTop={425}><Col offset={16}><Button className = "button" variant="contained" color="primary" onClick = {jumpToTutorialPage} >
                     遊戲方法
-                </Button></Row>
-                <Row justify="center"><Button className = "button" type="primary" shape="round" size={'large'} onClick = {jumpToRankPage} >
+                </Button></Col></Affix>
+                <Affix offsetTop={495}><Col offset={16}><Button className = "button" variant="contained" color="primary" onClick = {jumpToRankPage} >
                     排行榜
-                </Button></Row>
-                <Row justify="center"><Button className = "button" type="primary" shape="round" size={'large'} onClick = {jumpToCreditPage} >
+                </Button></Col></Affix>
+                <Affix offsetTop={565}><Col offset={16}><Button className = "button" variant="contained" color="primary" onClick = {jumpToCreditPage} >
                     製作人員
-                </Button></Row>        
-                <Button className = "button" type="primary"  shape="round" size = {'large'} onClick = {gotoGameOver}>
+                </Button></Col></Affix>
+                {/* <Affix offsetTop={450}><Col offset={16}><Button className = "button" type="primary" shape="round" size={'large'} onClick = {jumpToCreditPage} >
+                    製作人員
+                </Button></Col></Affix>       */}
+                <Button className = "button" variant="contained" color="primary"  onClick = {gotoGameOver}>
                     Go to Gameover
                 </Button>
             </div>
-            </>
+            </Row>
+            </ThemeProvider>
             )
         }
         else if (page===2)
@@ -95,7 +125,9 @@ const App = ()=>{
         else if (page===5)
         {
             return(
-                <GameOver setPage = {setPage}/>
+                <div>
+                    <GameOver setPage = {setPage}/>
+                </div>
             )
         }
         

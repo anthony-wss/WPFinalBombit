@@ -1,18 +1,16 @@
 import express from 'express'
 import Person from '../models/Person.js'
-var bodyParser = require('body-parser')
-var jsonParser = bodyParser.json()
 const router = express.Router()
-router.post('/postScore', jsonParser, async (req, res) => {
+router.post('/postScore',  async (req, res) => {
     console.log("in1")
-    var fin = await Person.find({name:req.body.name})
+    var fin = await Person.find({name:req.body.name, password:req.body.password})
     if (Object.keys(fin).length>0)  
     {
-        console.log("in2")
-        await Person.remove({name:req.body.name})
+        await Person.deleteOne({name:req.body.name, password:req.body.password})
         res.status(201).json({message:`Updating (${req.body.name} ${req.body.score})`, Person:fin})
         const person = new Person({
             name: req.body.name,
+            password: req.body.password,
             score: req.body.score
         })
         try {
@@ -26,6 +24,7 @@ router.post('/postScore', jsonParser, async (req, res) => {
         console.log(req)
         const person = new Person({
             name: req.body.name,
+            password: req.body.password,
             score: req.body.score
         })
         console.log(req.body.name)
@@ -37,7 +36,7 @@ router.post('/postScore', jsonParser, async (req, res) => {
         }
     } 
 })
-router.get('/allRank', async(req, res)=>{
+router.get('/allRank',async(req, res)=>{
     console.log("allRank")
     var fin = await Person.find({}).sort([['score', -1]])
     // var fin = await Person.find()
@@ -51,9 +50,26 @@ router.get('/allRank', async(req, res)=>{
     else
     {
         console.log("nothing")
-        res.status(403).json({message: "error",
-        data: null})
+        res.status(403).json({message: "error",data: null})
     }
+})
+router.post('/deleteData', async (req, res) => {
+    console.log("in delete")
+    try {
+        console.log(req.body.name, req.body.password, req.body.score)
+        const newPerson = await Person.find({name:req.body.name, password:req.body.password, score:req.body.score})
+        console.log(newPerson.length)
+        if (newPerson.length===0) res.status(201).json({deleteMessage:'Failed'})
+        else 
+        {
+            const newPerson = await Person.deleteOne({name:req.body.name, password:req.body.password, score:req.body.score})
+            res.status(201).json({deleteMessage:'Success'})
+        }
+    } catch (err) {
+        console.log(err);
+        res.status(400).json({deleteMessage:err})
+    }
+    
 })
 
 export default router

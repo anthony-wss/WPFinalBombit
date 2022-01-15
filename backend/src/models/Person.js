@@ -2,10 +2,13 @@ import mongoose from 'mongoose'
 
 const personSchema = new mongoose.Schema({
     name : {
-        type : String,
+        type : String
+    },
+    password : {
+        type : String
     },
     score : {
-        type : Number,
+        type : Number
     },
 })
 
