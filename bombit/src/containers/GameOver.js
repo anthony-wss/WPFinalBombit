@@ -40,16 +40,16 @@ const GameOver = ({setPage})=>{
     {
       console.log(name, password, score);
       const {
-        data: { message, Person },
+        data: { message },
       } = await axios.post('/postScore', {
         name,
         password,
         score,
       });
+      alert(message);
       setName('')
       setPassword('')
       console.log(message);
-      console.log(Person);
       HomePage();
     }
   }

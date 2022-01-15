@@ -111,8 +111,7 @@ const Rank = ({rank, setRank, setPage, queryRank, setQueryRank})=>{
                               score: item.score,
                             });
                             console.log('success')
-                            if (deleteMessage==='Success') alert(`成功刪除(${item.name},${item.score})`);
-                            else alert('密碼錯誤，刪除失敗');
+                            alert(deleteMessage);
                             previous();
                           }
                         }}
