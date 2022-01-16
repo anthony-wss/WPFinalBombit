@@ -32,7 +32,7 @@ function connect(){
         else {
             console.log("room id: -1")
         }
-        sendData({'room_id': `${0}`, 'pid': `${pid}`})
+        sendData({'room_id': `${0}`, 'pid': `${-1}`})
         console.log(`on open ${0} ${pid} sent.`)
     }
     ws.onclose = () => {
