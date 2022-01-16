@@ -14,8 +14,8 @@ import trunk_img from '../img/trunk.PNG';
 import bomb_up_img from '../img/bomb_up.PNG';
 import power_up_img from '../img/power_up.PNG';
 import speed_up_img from '../img/speed_up.PNG';
-import {sendData, getGameState, getInitState, getHasEnd, getScores, getPlayerCnt, setOnMessage} from "./Client";
-import {Room, getIsWaiting} from "./Room"
+import {sendData, getGameState, getInitState, getScores, getPlayerCnt, setPlayerCnt, getRoomId, getPlayerId} from "./Client";
+import {getGameStage, setGameStage, getLoaded, setLoaded} from "./Room"
 // sendData({player_id:1,key:" "}) 
 // player_id : int(由伺服器連線時分配) key : String (WASD => 上左下右,P=>空白鍵放炸彈)
 //
@@ -29,15 +29,9 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-var loaded = false
-
-function idx(x) {
-  return Math.floor((x*2+UNIT)/UNIT/2)
-}
-
 const UNIT = 37, WIDTH = 17, HEIGHT = 15;
 var id = 0;
-var player_id = 0;
+var hasRemove = 0;
 
 class Game extends React.Component {
   constructor(props) {
@@ -64,7 +58,7 @@ class Game extends React.Component {
     }
 
     // 載入圖片
-    if (!loaded) {
+    if (!getLoaded()) {
       PIXI.Loader.shared
         .add('chara_1_img', chara_1_img)
         .add('chara_2_img', chara_2_img)
@@ -83,7 +77,7 @@ class Game extends React.Component {
         .load((loader, resource) => {
           console.log('Player Loader Done');
           this.initialize(resource);
-          loaded = true
+          setLoaded(true)
         })
     }
   };
@@ -91,19 +85,19 @@ class Game extends React.Component {
   keyDown_handler = (key) => {
     switch(key) {
       case "ArrowUp":
-        sendData({player_id:id,key:"Dw", msg:""});
+        sendData({player_id:id,key:"Dw", msg:"", room_id:getRoomId()});
         break;
       case "ArrowDown":
-        sendData({player_id:id,key:"Ds", msg:""});
+        sendData({player_id:id,key:"Ds", msg:"", room_id:getRoomId()});
         break;
       case "ArrowLeft":
-        sendData({player_id:id,key:"Da", msg:""});
+        sendData({player_id:id,key:"Da", msg:"", room_id:getRoomId()});
         break;
       case "ArrowRight":
-        sendData({player_id:id,key:"Dd", msg:""});
+        sendData({player_id:id,key:"Dd", msg:"", room_id:getRoomId()});
         break;
       case " ":
-        sendData({player_id:id,key:"P", msg:""});
+        sendData({player_id:id,key:"P", msg:"", room_id:getRoomId()});
         break;
       default:
         break;
@@ -113,16 +107,16 @@ class Game extends React.Component {
   keyUp_handler = (key) => {
     switch(key) {
       case "ArrowUp":
-        sendData({player_id:id,key:"Uw", msg:""});
+        sendData({player_id:id,key:"Uw", msg:"", room_id:getRoomId()});
         break;
       case "ArrowDown":
-        sendData({player_id:id,key:"Us", msg:""});
+        sendData({player_id:id,key:"Us", msg:"", room_id:getRoomId()});
         break;
       case "ArrowLeft":
-        sendData({player_id:id,key:"Ua", msg:""});
+        sendData({player_id:id,key:"Ua", msg:"", room_id:getRoomId()});
         break;
       case "ArrowRight":
-        sendData({player_id:id,key:"Ud", msg:""});
+        sendData({player_id:id,key:"Ud", msg:"", room_id:getRoomId()});
         break;
       default:
         break;
@@ -132,7 +126,7 @@ class Game extends React.Component {
   initialize = async (resource) => {
     // 從server接收玩家id
     let gs = getInitState()
-    id = gs.player_id
+    id = getPlayerId()
 
     this.player_1_texture = resource.chara_1_img.texture
     this.player_2_texture = resource.chara_2_img.texture
@@ -163,6 +157,8 @@ class Game extends React.Component {
     const main_ticker = new PIXI.Ticker()
     main_ticker.add((delta) => {this.tickerLoop(main_ticker)})
     main_ticker.start()
+
+    hasRemove = 0;
   }
 
   tickerLoop = async (main_ticker) => {
@@ -181,32 +177,34 @@ class Game extends React.Component {
       await sleep(500)
     }
 
-    if (getHasEnd()) {
+    if (getGameStage() !== 2 && !hasRemove) {
+      hasRemove = 1
       this.app.ticker.remove(this.app.ticker[0]);
       this.SetUpBeforeGameOver();
       main_ticker.destroy()
     }
 
+    // console.log(gs.player_pos)
     for(let i = 0; i < gs.player_pos.length; i++) {
-      if (i == 0) {
+      if (i === 0) {
         let player_sprite = new PIXI.Sprite(this.player_1_texture);
         player_sprite.x = gs.player_pos[i][0];
         player_sprite.y = gs.player_pos[i][1];
         this.app.stage.addChild(player_sprite);
       }
-      else if (i == 1) {
+      else if (i === 1) {
         let player_sprite = new PIXI.Sprite(this.player_2_texture);
         player_sprite.x = gs.player_pos[i][0];
         player_sprite.y = gs.player_pos[i][1];
         this.app.stage.addChild(player_sprite);
       }
-      else if (i == 2) {
+      else if (i === 2) {
         let player_sprite = new PIXI.Sprite(this.player_3_texture);
         player_sprite.x = gs.player_pos[i][0];
         player_sprite.y = gs.player_pos[i][1];
         this.app.stage.addChild(player_sprite);
       }
-      else if (i == 3) {
+      else if (i === 3) {
         let player_sprite = new PIXI.Sprite(this.player_4_texture);
         player_sprite.x = gs.player_pos[i][0];
         player_sprite.y = gs.player_pos[i][1];
@@ -305,6 +303,8 @@ class Game extends React.Component {
   SetUpBeforeGameOver = ()=>{
     this.props.setGameStart(false);
     console.log(getScores())
+    setGameStage(0);
+    setPlayerCnt(0);
     this.props.setPage(5);
   }
 
@@ -328,8 +328,4 @@ class Game extends React.Component {
   }
 }
 
-const getPlayerId = () => {
-  return id;
-}
-
-export {Game, getPlayerId};
+export {Game};

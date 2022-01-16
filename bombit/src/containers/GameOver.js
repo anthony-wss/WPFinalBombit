@@ -7,8 +7,7 @@ import Button from '@mui/material/Button';
 import LoadingButton from '@mui/lab/LoadingButton';
 import SaveIcon from '@mui/icons-material/Save';
 import axios from "../api"
-import {sendData, getGameState, getInitState, getHasEnd, getScores, getPlayerCnt } from "./Client";
-import { getPlayerId } from './Game';
+import {sendData, getGameState, getInitState, getHasEnd, getScores, getPlayerCnt, getPlayerId } from "./Client";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { purple, blue, orange, } from '@mui/material/colors';
 import background from '../img/background.png';
@@ -34,8 +33,7 @@ const GameOver = ({setPage})=>{
   const HomePage = ()=>{
       setPage(1)
   }
-  const scoreArray = getScores();
-  const score = scoreArray[getPlayerId()];
+  const score = getScores();
   const saveData = async () => {
     if (name==='') alert('名字不能為空');
     else if (password==='') alert('密碼不能為空');
