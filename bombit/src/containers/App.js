@@ -95,9 +95,9 @@ const App = ()=>{
                 {/* <Affix offsetTop={450}><Col offset={16}><Button className = "button" type="primary" shape="round" size={'large'} onClick = {jumpToCreditPage} >
                     製作人員
                 </Button></Col></Affix>       */}
-                {/* <Button className = "button" variant="contained" color="primary"  onClick = {gotoGameOver}>
+                <Button className = "button" variant="contained" color="primary"  onClick = {gotoGameOver}>
                     Go to Gameover
-                </Button> */}
+                </Button>
             </div>
             </Row>
             </ThemeProvider>
