@@ -7,14 +7,15 @@ var initState = 0
 var pid = -1, room_id = 0
 
 var player_cnt = 0
-var players_score = [0, 0, 0, 0]
+var players_score = 0
+var countdown = 9
 
 function connect(){
     if (getGameStage() === 0) {
         return;
     }
     //使用 WebSocket 的網址向 Server 開啟連結
-    ws = new WebSocket('ws://linux7.csie.ntu.edu.tw:1933')
+    ws = new WebSocket('ws://linux7.csie.ntu.edu.tw:1955')
     //開啟後執行的動作，指定一個 function 會在連結 WebSocket 後執行
     ws.onopen = () => {
         console.log('open connection')
@@ -70,7 +71,9 @@ function connect(){
         else if (msg.Map === "ping") {
             sendData({'msg':"ping", "pid": `${pid}`, "room": `${room_id}`})
             player_cnt = msg.player_cnt
-            console.log(`pid=${pid} room=${room_id} current player count: ${player_cnt}`)
+            players_score = msg.score
+            countdown = msg.countdown
+            console.log(`pid=${pid} room=${room_id} current player count: ${player_cnt} current score: ${players_score}`)
         }
         else
             gameState = msg
@@ -119,4 +122,8 @@ const getPlayerId = () => {
     return pid
 }
 
-export {connect, sendData, getGameState, getInitState, getScores, getPlayerCnt, setPlayerCnt, closeWebSocket, getRoomId, getPlayerId}
+const getCountDown = () => {
+    return countdown
+}
+
+export {connect, sendData, getGameState, getInitState, getScores, getPlayerCnt, setPlayerCnt, closeWebSocket, getRoomId, getPlayerId, getCountDown}

@@ -44,6 +44,7 @@ const App = ()=>{
     const [credit, setCredit] = useState(false);
     const [room, setRoom] = useState(false);
     const [queryRank, setQueryRank] = useState(0);
+    const [playerScore, setPlayerScore] = useState(0);
     console.log(page)
 
     const whichpage = ()=>{
@@ -122,9 +123,20 @@ const App = ()=>{
         else if (page===4)
         {
             return(
-                <div>
-                    <Game setPage={setPage} setGameStart={setGameStart}/>
-                </div>
+                <>
+                <Row justify="center">
+                    <div>
+                        <Game setPage={setPage} setGameStart={setGameStart} setPlayerScore={setPlayerScore}/>
+                    </div>
+                </Row>
+                <Row justify="center">
+                    <div style={{
+                            fontSize:"50px"
+                    }}>
+                        分數:{playerScore}
+                    </div>
+                </Row>
+                </>
             )
         }
         else if (page===5)

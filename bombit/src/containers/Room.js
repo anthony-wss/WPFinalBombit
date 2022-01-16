@@ -8,7 +8,7 @@ import { Affix } from 'antd';
 import Button from "@mui/material/Button";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { purple, orange } from '@mui/material/colors';
-import {connect, sendData, getGameState, getInitState, getScores, getPlayerCnt, setPlayerCnt, closeWebSocket} from "./Client";
+import {connect, sendData, getGameState, getInitState, getScores, getPlayerCnt, setPlayerCnt, closeWebSocket, getCountDown} from "./Client";
 // import { useBeforeunload } from 'react-beforeunload';
 
 // 0: 主選單、排行榜等；1: 正在等待其他人加入連線；2: 遊戲中
@@ -53,6 +53,7 @@ const Room = ({room, setPage, setRoom, setGameStart})=>{
     const [Wait ,setWait] = useState(false)
     const [clickedWait, setClickedWait] = useState(false)
     const [playerCnt, setPlayerCnt] = useState(0)
+    const [countdown, setCountdown] = useState(9)
     var waitPeople = 4;
     const previous = ()=>{
         setPage(1);
@@ -78,6 +79,7 @@ const Room = ({room, setPage, setRoom, setGameStart})=>{
             setPlayerCnt(player_cnt);
             await sleep(500)
             player_cnt = getPlayerCnt()
+			setCountdown(getCountDown())
         }
         jumpToGamePage()
         // setWait(false);
@@ -114,7 +116,8 @@ const Room = ({room, setPage, setRoom, setGameStart})=>{
 						<Affix offsetTop={445}>
 							<Row justify="center" >
 									<div style={{display:clickedWait? 'block':'none'}}>
-											完成連線人數 : {getPlayerCnt()}/{waitPeople}
+											完成連線人數 : {getPlayerCnt()}/{waitPeople}<br></br>
+											遊戲將於 {countdown} 秒後開始... 
 									</div>
 							</Row>
 						</Affix>

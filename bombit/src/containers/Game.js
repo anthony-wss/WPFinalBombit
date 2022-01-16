@@ -163,6 +163,7 @@ class Game extends React.Component {
 
   tickerLoop = async (main_ticker) => {
     // console.log(this.app.stage)
+    this.props.setPlayerScore(getScores())
 
     // 清空stage
     while(this.app.stage.children[0]) {
@@ -322,7 +323,6 @@ class Game extends React.Component {
 
         <div id="type"></div>
         <div id="rendere"></div>
-        <div>分數:{getScores()}<button onClick = {this.SetUpBeforeGameOver}>jump to GameOver.js</button></div>
       </>
     )
   }
