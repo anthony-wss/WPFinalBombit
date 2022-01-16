@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import ReactDOM from 'react-dom';
 import zhCN from 'antd/lib/locale/zh_CN';
 import "moment/locale/zh-cn";
@@ -11,13 +11,15 @@ import axios from '../api';
 import Button from '@mui/material/Button';
 import DeleteIcon from '@mui/icons-material/Delete';
 import TextField from '@mui/material/TextField';
-import background from '../img/background.png';
+import background from '../img/Rank.png';
+import backgroundBody from '../img/RankRectangle.png';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { purple, orange, blue } from '@mui/material/colors';
+import { orange, red } from '@mui/material/colors';
 moment.locale('zh-cn');
 
 const Rank = ({rank, setRank, setPage, queryRank, setQueryRank})=>{
+  // console.log(blue)
   const theme = createTheme({
     palette: {
       primary: {
@@ -26,7 +28,7 @@ const Rank = ({rank, setRank, setPage, queryRank, setQueryRank})=>{
       },
       secondary: {
         // This is green.A700 as hex.
-        main: '#2962ff',
+        main: '#e65100',
       },
     },
   });
@@ -53,6 +55,16 @@ const Rank = ({rank, setRank, setPage, queryRank, setQueryRank})=>{
   return(
     <ThemeProvider theme={theme} >
       <Row justify="center">
+        <div 
+          style={{
+            display:rank? 'block':'none',
+            height:"300px", 
+            width:"1370px",
+            backgroundImage: `url(${background})`,
+          }}
+        >
+
+        </div>
         <div
           id="scrollableDiv"
           style={{
@@ -62,7 +74,7 @@ const Rank = ({rank, setRank, setPage, queryRank, setQueryRank})=>{
             overflow: 'auto',
             padding: '0 16px',
             border: '1px solid rgba(140, 140, 140, 0.35)',
-            backgroundImage: `url(${background})`
+            backgroundImage: `url(${backgroundBody})`,
           }}
         > 
           <InfiniteScroll
@@ -70,7 +82,6 @@ const Rank = ({rank, setRank, setPage, queryRank, setQueryRank})=>{
             // next={queryData}
             // hasMore={data.length < 50}
             loader={<Skeleton avatar paragraph={{ rows: 1 }} active />}
-            endMessage={<Divider plain>It is all, nothing more 🤐</Divider>}
             scrollableTarget="scrollableDiv"
           >
             <List
@@ -91,7 +102,7 @@ const Rank = ({rank, setRank, setPage, queryRank, setQueryRank})=>{
                         label="請輸入正確密碼"
                         type="password"
                         autoComplete="current-password"
-                        variant="standard" onChange={(e)=>setPassword(e.target.value)} 
+                        variant="standard" onChange={(e)=>setPassword(e.target.value)}
                       />
                     </Menu.Item>
                     <Menu.Item>
@@ -114,17 +125,17 @@ const Rank = ({rank, setRank, setPage, queryRank, setQueryRank})=>{
                             alert(deleteMessage);
                             previous();
                           }
-                        }}
+                        }} 
                       >
                         刪除
                       </Button>
                     </Menu.Item>
                   </Menu>}
                 >
-                  <a>
+                  <Button color = "secondary">
                     {`刪除分數 `}
-                    <DownOutlined />
-                  </a> 
+                    <DownOutlined/>
+                  </Button> 
                 </Dropdown>
                 
                 </List.Item>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Affix, Row, Col} from 'antd';
 import TextField from '@mui/material/TextField';
 import 'antd/dist/antd.css';
@@ -28,6 +28,9 @@ const GameOver = ({setPage})=>{
   });
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
+  const bodyRef = useRef(null)
+  const ref = React.createRef();
+
   const HomePage = ()=>{
       setPage(1)
   }
@@ -71,12 +74,32 @@ const GameOver = ({setPage})=>{
             </Affix> 
             <Affix offsetTop={385}>
               <Row justify="center">
-                  <TextField id="filled-basic" size = "small" placeholder="請輸入你的名字" variant="filled" onChange={(e)=>setName(e.target.value)} />
+                  <TextField 
+                    id="filled-basic" 
+                    key = {1}
+                    size = "small" 
+                    placeholder="請輸入你的名字" 
+                    variant="filled" 
+                    onChange={(e)=>setName(e.target.value)} 
+                    onKeyDown={(e)=>{
+                      if (e.key==='Enter'){
+                        console.log("enter")
+                        ref.current.focus()
+                      }
+                    }} 
+                  />
               </Row>    
             </Affix>
             <Affix offsetTop={433}>
               <Row justify="center">
-                <TextField id="filled-basic" size = "small" placeholder="請輸入你的密碼" variant="filled" onChange={(e)=>setPassword(e.target.value)} />
+                <TextField 
+                  id="filled-basic" 
+                  size = "small" 
+                  placeholder="請輸入你的密碼" 
+                  variant="filled" 
+                  onChange={(e)=>setPassword(e.target.value)} 
+                  ref={ref}
+                />
               </Row>
             </Affix>
             

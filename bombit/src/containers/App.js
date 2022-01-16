@@ -80,13 +80,13 @@ const App = ()=>{
                 }}
             >
                 <Row></Row>
-                <Affix offsetTop={355}><Col offset={16}><Button className = "button" variant="contained" color="primary" onClick = {jumpToRoomPage}> 
+                <Affix offsetTop={385}><Col offset={16}><Button className = "button" variant="contained" color="primary" onClick = {jumpToRoomPage}> 
                     進入大廳
                 </Button></Col></Affix>
-                <Affix offsetTop={425}><Col offset={16}><Button className = "button" variant="contained" color="primary" onClick = {jumpToTutorialPage} >
+                {/* <Affix offsetTop={425}><Col offset={16}><Button className = "button" variant="contained" color="primary" onClick = {jumpToTutorialPage} >
                     遊戲方法
-                </Button></Col></Affix>
-                <Affix offsetTop={495}><Col offset={16}><Button className = "button" variant="contained" color="primary" onClick = {jumpToRankPage} >
+                </Button></Col></Affix> */}
+                <Affix offsetTop={475}><Col offset={16}><Button className = "button" variant="contained" color="primary" onClick = {jumpToRankPage} >
                     排行榜
                 </Button></Col></Affix>
                 <Affix offsetTop={565}><Col offset={16}><Button className = "button" variant="contained" color="primary" onClick = {jumpToCreditPage} >
@@ -95,9 +95,9 @@ const App = ()=>{
                 {/* <Affix offsetTop={450}><Col offset={16}><Button className = "button" type="primary" shape="round" size={'large'} onClick = {jumpToCreditPage} >
                     製作人員
                 </Button></Col></Affix>       */}
-                <Button className = "button" variant="contained" color="primary"  onClick = {gotoGameOver}>
+                {/* <Button className = "button" variant="contained" color="primary"  onClick = {gotoGameOver}>
                     Go to Gameover
-                </Button>
+                </Button> */}
             </div>
             </Row>
             </ThemeProvider>
