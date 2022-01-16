@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import React from 'react';
 import ReactDOM from 'react-dom';
-import {Room} from './Room'
+import {Room, setGameStage} from './Room'
 import Rank from './Rank'
 import Tutorial from './Tutorial'
 import GameOver from './GameOver'
@@ -31,22 +31,27 @@ const App = ()=>{
     const whichpage = ()=>{
         const jumpToRoomPage = ()=>{
             setPage(2);
+            setGameStage(2);
             setRoom(true);
         }
         const jumpToTutorialPage = ()=>{
             setPage(2);
+            setGameStage(2);
             setTutorial(true);
         }
         const jumpToRankPage = ()=>{
             setPage(2);
+            setGameStage(2);
             setRank(true);
             setQueryRank(1);
         }
         const jumpToCreditPage = ()=>{
             setPage(2);
+            setGameStage(2);
             setCredit(true);
         }
         const gotoGameOver = ()=>{
+            setGameStage(2);
             setPage(5);
         }
         if (page===1) 
