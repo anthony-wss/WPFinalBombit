@@ -28,12 +28,12 @@ const GameOver = ({setPage})=>{
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const bodyRef = useRef(null)
-  const ref = React.createRef();
 
   const HomePage = ()=>{
       setPage(1)
   }
-  const score = getScores();
+  const scoreArray = getScores();
+  const score = scoreArray[getPlayerId()];
   const saveData = async () => {
     if (name==='') alert('名字不能為空');
     else if (password==='') alert('密碼不能為空');
@@ -82,7 +82,7 @@ const GameOver = ({setPage})=>{
                     onKeyDown={(e)=>{
                       if (e.key==='Enter'){
                         console.log("enter")
-                        ref.current.focus()
+                        bodyRef.current.focus()
                       }
                     }} 
                   />
@@ -96,7 +96,7 @@ const GameOver = ({setPage})=>{
                   placeholder="請輸入你的密碼" 
                   variant="filled" 
                   onChange={(e)=>setPassword(e.target.value)} 
-                  ref={ref}
+                  ref={bodyRef}
                 />
               </Row>
             </Affix>
