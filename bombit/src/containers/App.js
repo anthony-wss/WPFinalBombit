@@ -131,7 +131,7 @@ const App = ()=>{
                 </Row>
                 <Row justify="center">
                     <div style={{
-                            fontSize:"50px"
+                            fontSize:"24px"
                     }}>
                         分數:{playerScore}
                     </div>

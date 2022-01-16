@@ -6,6 +6,9 @@ from math import floor
 from random import randint, random
 from item import *
 import signal
+from robot import *
+import copy
+
 # receive : json.loads(message)
 # 收到一個dict物件 {player_id:Int,key:String}
 # 會呼叫 player_control(D) 傳入上述物件
@@ -18,6 +21,9 @@ UNIT, POWER = 37, 1
 HEIGHT, WIDTH = 15, 17
 ITEMNUM = 3
 GENITEM = 0.5
+
+first_player_joined = 99999
+ping_t = 0
 
 class Score():
     def __init__(self):
@@ -110,6 +116,8 @@ class Game():
         self.items = []
         self.t = 0
         self.item_time = 4
+        self.bot_list = []
+        self.prepared_robot = False
 
     def reset(self):
         self.Map = Map()
@@ -118,6 +126,8 @@ class Game():
         self.items = []
 
     def addPlayer(self, pid):
+        if len(self.players) >= 4:
+            return
         self.players.append(Player())
         print("addPlayer: pid =", pid)
         if pid == 0:
@@ -150,10 +160,12 @@ async def getGameState(game):
         'player_pos': [[p.x, p.y] for p in game.players]
     }
 
-async def player_control(dic, game):
+def player_control(dic, game):
     D = DStructure(dic['player_id'], dic['key'])
     pid = int(D.player_id)
-    print(dic)
+    if game.players[pid].x > 5000:
+        return
+    # print(dic)
     if D.key == 'P':
         if game.players[pid].quota > 0:
             game.players[pid].quota -= 1
@@ -235,6 +247,195 @@ def valid_position(p, dir, game):
             p.x += p.speed
             p.y = idx(p.y)*UNIT
 
+def bot_find_path(path,map,cur,des):    # [-1,-1]代表到了目的地 # -2:traversed
+    map[cur[1]][cur[0]] = -2
+    path.append(cur)
+    # print("Traverse",cur,"path",path)
+    if(cur[0] == des[0] and cur[1] == des[1]):
+        path.append([-1,-1])
+        return True
+    t_x = cur[0]
+    t_y = cur[1]
+    
+    if(t_x>0):
+        if(map[t_y][t_x-1] == 0):
+            if bot_find_path(path,map,[t_x-1,t_y],des):
+                return True
+    if(t_x<17):
+        if(map[t_y][t_x+1] == 0):
+            if bot_find_path(path,map,[t_x+1,t_y],des):
+                return True
+    if(t_y<15):
+        if(map[t_y+1][t_x] == 0):
+            if bot_find_path(path,map,[t_x,t_y+1],des):
+                return True
+    if(t_y > 0):
+        if(map[t_y-1][t_x] == 0):
+            if bot_find_path(path,map,[t_x,t_y-1],des):
+                return True
+    try:
+        path.remove(path[-1])
+    except:
+        pass
+        # print("not found",path)
+    # print("Remove",cur,"path",path)
+    return False
+
+def bot_move_to(target,pid,idx_x,idx_y,map):
+    find_map = copy.deepcopy(map)
+    path = []
+    if target[0] == idx_x and target[1] == idx_y:
+        return [[-1,-1]]
+    t_x = idx_x
+    t_y = idx_y
+    find_map[t_y][t_x] = -2
+    path.append([t_x,t_y])
+    if(t_x>0):
+        if(find_map[t_y][t_x-1] == 0):
+            if bot_find_path(path,find_map,[t_x-1,t_y],target) :
+                return path
+    if(t_x<17):
+        if(find_map[t_y][t_x+1] == 0):
+            if bot_find_path(path,find_map,[t_x+1,t_y],target):
+                return path
+    if(t_y<15):
+        if(find_map[t_y+1][t_x] == 0):
+            if bot_find_path(path,find_map,[t_x,t_y+1],target):
+                return path
+    if(t_y > 0):
+        if(find_map[t_y-1][t_x] == 0):
+            if bot_find_path(path,find_map,[t_x,t_y-1],target):
+                return path
+
+    return path+[[-1,-1]]
+
+def bot_think(player_id,game):
+    bot_list = game.bot_list
+
+    if player_id == -1:
+        return
+    ind = 0
+    bomb_map = bot_detect_bomb(game.Map.obj)
+    pos_x = game.players[player_id].x
+    pos_y = game.players[player_id].y
+    if pos_x > 5000:
+        return
+    idx_x = idx(pos_x)
+    idx_y = idx(pos_y)
+    # try:
+    for i in range(len(bot_list)):
+        if bot_list[i][0] == player_id:
+            # print(bot_list[i][1])
+            pass
+        if bot_list[i][0] == player_id and len(bot_list[i][1])>0 and bot_list[i][1][0] != -1: # 只走 不規劃新的路
+            # if game.Map.obj[idx_y][idx_x] == 0 and (bomb_map[bot_list[i][1][0][1]][bot_list[i][1][0][0]] == -1) and  bomb_map[idx_y][idx_x] != -1:
+            #     return
+            # print(f"bot{player_id}: {bot_list[i][1]}")
+            bot_go(player_id,game,i) # 會卡住
+            return
+    # except IndexError:
+    #     return
+    # print("think new path")
+    
+    # pos to grid
+    target = [] # 要去的下個idx_x/y
+    place_bomb = False
+
+    try:
+        if(bomb_map[idx_y][idx_x] == 2):
+            target = bot_escape(idx_x,idx_y,bomb_map)
+    except IndexError:
+        print("bot_escape", idx_y, idx_x)
+    else:
+        target = bot_find_destroyable(idx_x,idx_y,game.Map.obj)
+        if target[0] == -1:
+            # print("roaming")
+            target = bot_roamer(idx_x,idx_y,game.Map.obj)
+        else:
+            # print("find_destroy")
+            place_bomb = True
+    # target = bot_roamer(idx_x,idx_y,game.Map.obj)
+    # print("robot",player_id,"wants to move to",target)
+    # if place_bomb:
+        # print("and place a bomb")
+    path = bot_move_to(target,player_id,idx_x,idx_y,game.Map.obj)
+    # print("path : ",path)
+    for i in bot_list:
+        if i[0] == player_id:
+            i[1] = path[1:]
+            i[2] = place_bomb
+    # await bot_go(player_id,path,game) # 會卡住
+    # if(place_bomb):
+    #     player_control({})
+    #     target = bot_escape(idx_x,idx_y,bomb_map)
+    #     bot_move_to(target,player_id,idx_x,idx_y,game.Map.obj)
+    # 若在炸彈範圍 躲避
+    # 若無 找下一個附近有可炸物的地方 放炸彈
+        #若無可炸物 到處走
+
+
+def bot_handle(game):
+    # print(f"{bot_list=}")
+    for i in game.bot_list:
+        bot_think(i[0],game)
+    return 
+
+def bot_go(pid, game, ind):
+    bot_list = game.bot_list
+
+    pos_x = game.players[pid].x
+    pos_y = game.players[pid].y
+    path = bot_list[ind][1]
+    bomb = bot_list[ind][2]
+    nxt = path[0]
+    robot_strip = 0.5
+
+    # nxt_t = t + 0.5
+    # print("try move to",nxt)
+    # while 1:
+        # time.sleep(0.0000000001)
+        # if t < nxt_t:
+        #     continue
+        # else:
+        #     nxt_t = t+ 0.5
+    # print(UNIT)
+    # print(pos_x,pos_y,(path[0][0])*UNIT,(path[0][1])*UNIT)
+    # print(idx(pos_x),idx(pos_y),path[0][0],path[0][1])
+
+    # if idx(pos_x) == path[0][0] and idx(pos_y) == path[0][1]:
+        
+    if path[0][0] == -1:
+        if bomb:
+            # print("debug: put bomb")
+            player_control({'player_id': pid, 'key': 'P', 'msg': ''}, game)
+        bot_list[ind][1] = []
+        return
+    # print("try move to",nxt)
+    # await player_control({"player_id":pid,"key":"Uw"})
+    # await player_control({"player_id":pid,"key":"Ua"})
+    # await player_control({"player_id":pid,"key":"Us"})
+    # await player_control({"player_id":pid,"key":"Ud"})
+    if pos_x < nxt[0] * UNIT:
+        # pass
+        game.players[pid].x+= robot_strip
+        # await player_control({"player_id":pid,"key":"Dd"})
+    elif pos_x > nxt[0]* UNIT:
+        game.players[pid].x-= robot_strip
+        # await player_control({"player_id":pid,"key":"Da"})
+    elif pos_y < nxt[1]*UNIT:
+        game.players[pid].y+= robot_strip
+        # await player_control({"player_id":pid,"key":"Ds"})
+    elif pos_y > nxt[1]*UNIT:
+        game.players[pid].y-= robot_strip
+    else:
+        # print("arrived!",path[0])
+        bot_list[ind][1] = path[1:]
+    
+    # if game.players[pid].is_moving[0] == 0: # 向上走
+    #     
+    # pos_x = game.players[pid].x
+    # pos_y = game.players[pid].y
+
 async def update(game, room):
     """
     每1/60秒call一次的function
@@ -245,10 +446,13 @@ async def update(game, room):
         game.t += 0.01
         t = game.t
 
+        bot_handle(game)
+
         if room.count_alive_players() == 1:
             for i in range(len(room.connected_clients)):
                 message = {"Map": "End", "players_score": game.players[i].score}
-                await room.connected_clients[i].ws.send(f"{message}".replace("'",'"',100))
+                if room.connected_clients[i].status:
+                    await room.connected_clients[i].ws.send(f"{message}".replace("'",'"',100))
             resetGame()
             print("End Game")
             return
@@ -284,7 +488,7 @@ async def update(game, room):
             # 檢查每顆炸彈的時限
             if t > b.explode_time and not b.set_fire:
                 b.set_fire = True
-                print('Boom!')
+                # print('Boom!')
                 bomb_x, bomb_y = idx(b.x), idx(b.y)
                 game.Map.obj[bomb_y][bomb_x] = 3
                 dir_blocked = [0, 0, 0, 0]
@@ -395,7 +599,7 @@ async def update(game, room):
                     it.get(p)
                     p.score += SCORE.getItem
                     game.items.remove(it)
-                    print(f"item picked")
+                    # print(f"item picked")
                     game.Map.obj[idx(it.y)][idx(it.x)] = 0
 
 rooms = []
@@ -445,12 +649,16 @@ class Room():
         for i in range(len(self.connected_clients)):
             if self.connected_clients[i] != -1 and self.connected_clients[i].status == 1:
                 ans += 1
+            if self.connected_clients[i] != -1 and self.connected_clients[i].ws == None:
+                ans += 1
         return ans
 
     def count_alive_players(self):
         ans = 0
         for i in range(len(self.connected_clients)):
             if self.connected_clients[i].status == 1 and self.game.players[i].x < 5000:
+                ans += 1
+            if self.connected_clients[i].ws == None and self.game.players[i].x < 5000:
                 ans += 1
         return ans
 
@@ -464,7 +672,21 @@ class Room():
         self.timeout_counter.clear()
         self.timeout_counter = [0, 0, 0, 0]
 
+def prepare_robot(room, game):
+    if game.prepared_robot:
+        return
+    # print("debug: prepare_robot called")
+    game.prepared_robot = True
+    current_player_num = room.count_ready_players()
+    for i in range(current_player_num,4):
+        room.connected_clients[i] = Client(i, None)
+        room.connected_clients[i].status = 0
+        game.bot_list.append([i,[],False]) # pid, path, place bomb after arrive target?
+    print(f"number of bot = {len(game.bot_list)}")
+    # print(f"{bot_list=}")
+
 async def handler(websocket, path):
+    global first_player_joined
     # Register & init
     ip = websocket.remote_address[0] + ':' + str(websocket.remote_address[1])
 
@@ -499,6 +721,9 @@ async def handler(websocket, path):
             rooms.append(Room(room_id))
             pid = rooms[-1].addClient(websocket)
 
+    if pid == 0:
+        first_player_joined = ping_t + 10
+
     init_data = {"Map":"Welcome","player_id":pid,"room_id":room_id}
     await websocket.send(f"{init_data}".replace("'",'"',100))
     
@@ -532,7 +757,7 @@ async def handler(websocket, path):
                     # print(f"player({pid}) in room({room_id}) responded.")
                     rooms[room_id].timeout_counter[pid] = 0
                 else:
-                    await player_control(data, rooms[room_id].game)
+                    player_control(data, rooms[room_id].game)
             else:
                 listener_task.cancel()
 
@@ -551,15 +776,18 @@ async def handler(websocket, path):
         return
 
 async def pinging_coroutine():
+    global ping_t, first_player_joined
     room_id = 0
-    t = 0
     while True:
         connected_clients = rooms[0].connected_clients
-        print(f'ping: {t}')
+        # print(f'ping: {ping_t}')
         for i in range(len(connected_clients)):
             if connected_clients[i] != -1 and connected_clients[i].status:
-                # print(f'ping: player {i}')
                 message = {'Map': 'ping', 'player_cnt': rooms[room_id].count_ready_players()}
+                if len(rooms[0].game.players) > i:
+                    message['score'] = rooms[room_id].game.players[i].score
+                if first_player_joined - ping_t < 20 and first_player_joined - ping_t > 0:
+                    message['countdown'] = first_player_joined - ping_t
                 try:
                     await connected_clients[i].ws.send(f"{message}".replace("'",'"',100))
                 except websockets.exceptions.ConnectionClosedError:
@@ -570,7 +798,14 @@ async def pinging_coroutine():
                     print(f"player({i}) in room({room_id}) disconnected (timeout).")
                     connected_clients[i].status = 0
         await asyncio.sleep(1)
-        t += 1
+        ping_t += 1
+
+        if first_player_joined - ping_t < 20 and first_player_joined - ping_t > 0:
+            print(f"game will start in {first_player_joined - ping_t} sec.")
+
+        # 機器人timeout之後會被加入
+        if int(ping_t) == int(first_player_joined):
+            prepare_robot(rooms[0], rooms[0].game)
     print("pinging corroutine exit")
 
 async def main():
@@ -580,7 +815,7 @@ async def main():
     loop.add_signal_handler(signal.SIGTERM, stop.set_result, None)
     loop.create_task(pinging_coroutine())
 
-    async with websockets.serve(handler, 'linux7.csie.ntu.edu.tw', 1933):
+    async with websockets.serve(handler, 'linux7.csie.ntu.edu.tw', 1955):
         await stop
 
 if __name__ == "__main__":

@@ -63,7 +63,9 @@ function connect(){
         }
         else if (msg.Map === "End") {
             console.log(msg.players_score)
-            players_score = msg.players_score
+            if (msg.players_score) {
+                players_score = msg.players_score
+            }
             sessionStorage.setItem("pid", -1)
             pid = -1
             setGameStage(0);

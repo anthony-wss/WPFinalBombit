@@ -32,8 +32,7 @@ const GameOver = ({setPage})=>{
   const HomePage = ()=>{
       setPage(1)
   }
-  const scoreArray = getScores();
-  const score = scoreArray[getPlayerId()];
+  const score = getScores();
   const saveData = async () => {
     if (name==='') alert('名字不能為空');
     else if (password==='') alert('密碼不能為空');
