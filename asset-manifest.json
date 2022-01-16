@@ -1,0 +1,28 @@
+{
+  "files": {
+    "main.css": "/WPFinalBombit/static/css/main.c2b6606f.css",
+    "main.js": "/WPFinalBombit/static/js/main.b14a2483.js",
+    "static/media/background.png": "/WPFinalBombit/static/media/background.8ed0672e4d577520738e.png",
+    "static/media/Rank.png": "/WPFinalBombit/static/media/Rank.01130d4a6de95d7aa77e.png",
+    "static/media/RankRectangle.png": "/WPFinalBombit/static/media/RankRectangle.6e84994bc2c7c4ea5b2d.png",
+    "static/media/creditLine.png": "/WPFinalBombit/static/media/creditLine.34bc8e88c0cc7e776561.png",
+    "static/media/bush.PNG": "/WPFinalBombit/static/media/bush.c8cb2622bcc696636a15.PNG",
+    "static/media/speed_up.PNG": "/WPFinalBombit/static/media/speed_up.75b84c0966913e9cb25a.PNG",
+    "static/media/trunk.PNG": "/WPFinalBombit/static/media/trunk.8056acf6f29fa3de0213.PNG",
+    "static/media/power_up.PNG": "/WPFinalBombit/static/media/power_up.962c83e3a3c6beea0730.PNG",
+    "static/media/bomb_up.PNG": "/WPFinalBombit/static/media/bomb_up.3d327aec05e27e8d0f9c.PNG",
+    "static/media/chara_4.PNG": "/WPFinalBombit/static/media/chara_4.2e49d9e4f54b3009214c.PNG",
+    "static/media/chara_3.PNG": "/WPFinalBombit/static/media/chara_3.13b17f078c81aae9bd27.PNG",
+    "static/media/stone.PNG": "/WPFinalBombit/static/media/stone.0d237960917b8a3043b3.PNG",
+    "static/media/chara_2.PNG": "/WPFinalBombit/static/media/chara_2.62a7cc89d0d607bf23cb.PNG",
+    "static/media/chara_1.PNG": "/WPFinalBombit/static/media/chara_1.7d3224818962e1f16b53.PNG",
+    "static/media/bag.PNG": "/WPFinalBombit/static/media/bag.1ece479a8c35956c7723.PNG",
+    "index.html": "/WPFinalBombit/index.html",
+    "main.c2b6606f.css.map": "/WPFinalBombit/static/css/main.c2b6606f.css.map",
+    "main.b14a2483.js.map": "/WPFinalBombit/static/js/main.b14a2483.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.c2b6606f.css",
+    "static/js/main.b14a2483.js"
+  ]
+}
