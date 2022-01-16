@@ -4,6 +4,7 @@ import background from '../img/background.png';
 import Button from "@mui/material/Button";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { purple, orange } from '@mui/material/colors';
+import us from '../img/creditLine.png';
 const Credit = ({credit, setCredit, setPage})=>{
 	const theme = createTheme({
 		palette: {
@@ -32,22 +33,24 @@ const Credit = ({credit, setCredit, setPage})=>{
 						backgroundImage: `url(${background})` 
 				}}>
 
-					<Col offset={15}>
-						<Affix offsetTop={385}>
+					<Col offset={14}>
+						<Affix offsetTop={305}>
 							<Row justify="center">
-								B09902033 王秀軒<br></br>
+								<img src={us} style={{height:"350px", width:"auto"}}></img>
+								{/* B09902033 王秀軒<br></br>
 								B09902040 洪郁凱<br></br>
-								B09902110 李沅錡<br></br>
-							</Row>
-							<Row justify="center">
-								<Button className = "button" variant="contained" color="primary" onClick = {previous}>
-									回到主選單
-								</Button>
+								B09902110 李沅錡<br></br> */}
 							</Row>
 
 						</Affix>
 					</Col>
 				</div>
+			
+			</Row>
+			<Row justify="center">
+				<Button style={{display:credit? 'block':'none',}} className = "button" variant="contained" color="primary" onClick = {previous}>
+					回到主選單
+				</Button>
 			</Row>
 		</ThemeProvider>
 	)
